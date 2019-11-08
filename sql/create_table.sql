@@ -132,6 +132,7 @@ CREATE TABLE IF NOT EXISTS cp_passenger_bid (
     --3. check that the bid_price is greater than the min_bid
     --4. check that the number_of_passengers is less than the max_passengers
     --5. check that the bid occurs after the advertisement was put up and before it ends
+    --6. CHECK that for the same journeys only 1 is set to true
 
     --BONUS--
     --1. check that pick up address is actually in pick up area
@@ -223,7 +224,7 @@ BEGIN
             AND d.max_passengers >= NEW.max_passengers
     );
     IF NOT check_car_max_passenger THEN
-        RAISE NOTICE 'CAR CANNOT HOLD THAT MANY PASSENGERS';
+        RAISE EXCEPTION 'CAR CANNOT HOLD THAT MANY PASSENGERS';
         RETURN NULL;
     END IF;
 
@@ -234,7 +235,7 @@ BEGIN
         AND g.account_creation_time < NEW.bid_start_time
     );
     IF NOT check_correct_bid_time THEN
-        RAISE NOTICE 'BID WAS PUT UP BEFORE ACCOUNT CREATION';
+        RAISE EXCEPTION 'BID WAS PUT UP BEFORE ACCOUNT CREATION';
         RETURN NULL;
     END IF;
 
@@ -247,7 +248,7 @@ BEGIN
         OR a.pick_up_time = NEW.pick_up_time)
     );
     IF check_driver_requests_overlap AND check_driver_requests_overlap IS NOT NULL THEN
-        RAISE NOTICE 'OVERLAP WITH OTHER REQUESTS';
+        RAISE EXCEPTION 'OVERLAP WITH OTHER REQUESTS';
         RETURN NULL;
     END IF;
 
@@ -261,7 +262,7 @@ BEGIN
     );
 
     IF check_passenger_bid_overlap AND check_passenger_bid_overlap IS NOT NULL THEN
-        RAISE NOTICE 'OVERLAP WITH OTHER BIDS';
+        RAISE EXCEPTION 'OVERLAP WITH OTHER BIDS';
         RETURN NULL;
     END IF;
 
@@ -285,6 +286,8 @@ AS $$
     DECLARE check_minimum_bid BOOLEAN;
     DECLARE check_correct_bid_time BOOLEAN;
     DECLARE check_driver_requests_overlap BOOLEAN;
+    --DECLARE check_winning_bid INTEGER;
+    --DECLARE check_losing_bid INTEGER;
 BEGIN
     --check that bid occurs after it was put up
     check_advertised_ride_bid_start := EXISTS (
@@ -294,7 +297,7 @@ BEGIN
     );
 
     IF NOT check_advertised_ride_bid_start THEN
-        RAISE NOTICE 'BID OCCURS BEFORE IT WAS PUT UP';
+        RAISE EXCEPTION 'BID OCCURS BEFORE IT WAS PUT UP';
         RETURN NULL;
     END IF;
 
@@ -306,7 +309,7 @@ BEGIN
     );
 
     IF NOT check_advertised_ride_bid_end THEN
-        RAISE NOTICE 'BID OCCURS AFTER IT WAS PUT UP';
+        RAISE EXCEPTION 'BID OCCURS AFTER IT WAS PUT UP';
         RETURN NULL;
     END IF;
 
@@ -318,7 +321,7 @@ BEGIN
     );
 
     IF NOT check_enough_seats THEN
-        RAISE NOTICE 'NOT ENOUGH SEATS';
+        RAISE EXCEPTION 'NOT ENOUGH SEATS';
         RETURN NULL;
     END IF;
 
@@ -330,7 +333,7 @@ BEGIN
     );
 
     IF NOT check_minimum_bid THEN
-        RAISE NOTICE 'BELOW MINIMUM BID';
+        RAISE EXCEPTION 'BELOW MINIMUM BID';
         RETURN NULL;
     END IF;
 
@@ -341,7 +344,7 @@ BEGIN
         AND g.account_creation_time < NEW.bid_time
     );
     IF NOT check_correct_bid_time THEN
-        RAISE NOTICE 'BID WAS PUT UP BEFORE ACCOUNT CREATION';
+        RAISE EXCEPTION 'BID WAS PUT UP BEFORE ACCOUNT CREATION';
         RETURN NULL;
     END IF;
 
@@ -355,9 +358,23 @@ BEGIN
     );
 
     IF check_driver_requests_overlap AND check_driver_requests_overlap IS NOT NULL THEN
-        RAISE NOTICE 'OVERLAP WITH ADVERTISED JOURNIES';
+        RAISE EXCEPTION 'OVERLAP WITH ADVERTISED JOURNIES';
         RETURN NULL;
     END IF;
+
+    -- check_winning_bid := (
+    --     SELECT COUNT(*) FROM cp_passenger_bid a
+    --     WHERE a.passenger_email = NEW.passenger_email
+    --     AND a.driver_email = NEW.driver_email
+    --     AND a.pick_up_time = NEW.pick_up_time
+    --     AND bid_won = TRUE
+    -- );
+
+    -- check_losing_bid := (
+
+    -- );
+
+    -- IF NOT(check_winning_bid = 0 OR check_winning_bid = 1) 
 
     RETURN NEW;
 END;
@@ -383,7 +400,7 @@ BEGIN
         AND b.bid_won = TRUE
     );
     IF NOT check_won_bid THEN
-        RAISE NOTICE 'BID NOT WON YET';
+        RAISE EXCEPTION 'BID NOT WON YET';
         RETURN NULL;
     END IF;
     RETURN NEW;
@@ -408,7 +425,7 @@ BEGIN
         AND j.journey_end_time IS NOT NULL
     );
     IF NOT check_journey_over THEN
-        RAISE NOTICE 'JOURNEY NOT OVER YET';
+        RAISE EXCEPTION 'JOURNEY NOT OVER YET';
         RETURN NULL;
     END IF;
     RETURN NEW;
@@ -433,7 +450,7 @@ BEGIN
         AND j.journey_end_time IS NOT NULL
     );
     IF NOT check_journey_over THEN
-        RAISE NOTICE 'JOURNEY NOT OVER YET';
+        RAISE EXCEPTION 'JOURNEY NOT OVER YET';
         RETURN NULL;
     END IF;
     RETURN NEW;
@@ -458,7 +475,7 @@ BEGIN
         AND j.journey_end_time IS NOT NULL
     );
     IF NOT check_journey_over THEN
-        RAISE NOTICE 'JOURNEY NOT OVER YET';
+        RAISE EXCEPTION 'JOURNEY NOT OVER YET';
         RETURN NULL;
     END IF;
     RETURN NEW;
