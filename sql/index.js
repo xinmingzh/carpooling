@@ -14,7 +14,7 @@ sql.query = {
 	all_cars:  'SELECT * FROM cp_driver_drives WHERE email=$1',
 	all_journeys: 'SELECT car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, pick_up_time FROM cp_advertised_journey WHERE email=$1',
 	valid_journeys: 'SELECT * FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_driver WHERE bid_end_time > NOW()::timestamp AND email=$1',
-	all_available_journeys: 'select a.email, d.car_model, a.car_plate_no, a.max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, to_char(pick_up_time , \'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time from cp_advertised_journey a LEFT JOIN cp_driver_drives d ON a.email = d.email and a.car_plate_no = d.car_plate_no WHERE bid_end_time > NOW()::timestamp',
+	all_available_journeys: 'select a.email , d.car_model, a.car_plate_no, a.max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, to_char(pick_up_time , \'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time from cp_advertised_journey a LEFT JOIN cp_driver_drives d ON a.email = d.email and a.car_plate_no = d.car_plate_no WHERE bid_end_time > NOW()::timestamp',
 	single_passenger_bids: 'SELECT driver_email, firstname, lastname, car_plate_no, to_char(pick_up_time,\'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time, pick_up_address, drop_off_address, to_char(bid_time,\'YYYY-MM-DD HH24:MI:SS\') AS bid_time, bid_price, number_of_passengers FROM cp_passenger_bid NATURAL JOIN cp_advertised_journey NATURAL JOIN cp_driver NATURAL JOIN cp_user WHERE passenger_email=$1',
   complete_journeys_driver: 'SELECT passenger_email, car_plate_no, pick_up_time, journey_start_time, journey_end_time, journey_distance FROM cp_journey_occurs WHERE driver_email=$1',
 	estimated_price: 'SELECT AVG(bid_price) AS avg_price FROM cp_passenger_bid NATURAL JOIN cp_advertised_journey WHERE bid_won = TRUE AND pick_up_area=$1 AND drop_off_area=$2 GROUP BY pick_up_area, drop_off_area',
@@ -31,12 +31,12 @@ sql.query = {
 	rate_driver: '',
 
 	add_cash_payment: 'INSERT INTO cp_payment_method (have_card, email) VALUES (\'f\', $1)',
-
 	// Login
 	userpass: 'SELECT email, password, firstname, lastname FROM cp_user WHERE email=$1',
 	find_driver:'SELECT * FROM cp_driver WHERE email=$1',
 	find_passenger: 'SELECT * FROM cp_passenger WHERE email=$1',
-	find_advertised_ride: 'SELECT email, firstname, lastname, gender, car_model, car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, to_char(bid_end_time, \'YYYY-MM-DD HH24:MI:SS\') AS bid_end_time, to_char(pick_up_time, \'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time FROM cp_advertised_journey NATURAL JOIN cp_user NATURAL JOIN cp_driver_drives WHERE email=$1 AND to_char(pick_up_time, \'YYYY-MM-DD HH24:MI:SS\')=$2 AND car_plate_no=$3',
+
+	find_advertised_ride: 'SELECT email, firstname, lastname, gender, car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, to_char(bid_end_time, \'YYYY-MM-DD HH24:MI:SS\') AS bid_end_time, to_char(pick_up_time, \'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time FROM cp_advertised_journey NATURAL JOIN cp_user WHERE email=$1 AND to_char(pick_up_time, \'YYYY-MM-DD HH24:MI:SS\')=$2 AND car_plate_no=$3',
 
 	// Update
 	update_info: 'UPDATE cp_user SET firstname=$2, lastname=$3 WHERE email=$1',
@@ -44,8 +44,7 @@ sql.query = {
 	update_car: 'UPDATE cp_driver_drives SET car_plate_no=$1, car_model=$2, max_passengers=$3 WHERE email=$4 AND car_plate_no=$5',
 	add_payment: 'UPDATE cp_payment_method SET have_card=$1, cardholder_name=$2, cvv=$3, expiry_date=$4, card_number=$5, email=$6',
 	add_driver_info: 'UPDATE cp_driver SET bank_account_no=$1, license_no=$2 WHERE email=$3',
-	update_advertisement: '',
-	update_bid: '',
+	update_when_bid_selected: 'DELETE FROM cp_passenger_bid a WHERE a.passenger_email = $1 AND ((a.pick_up_time + \'30 minute\'::interval > $2 AND a.pick_up_time < $2) OR (a.pick_up_time - \'30 minute\'::interval < $2 AND a.pick_up_time > $2) OR a.pick_up_time = $2) AND a.bid_won IS NULL; UPDATE cp_passenger_bid a SET bid_won = FALSE WHERE a.driver_email = $3 AND a.pick_up_time = $2 AND a.passenger_email <> $1; UPDATE cp_passenger_bid a SET bid_won = TRUE WHERE a.driver_email = $3 AND a.pick_up_time = $2 AND a.passenger_email = $1; INSERT INTO cp_journey_occurs (passenger_email, driver_email, pick_up_time) VALUES ($1, $3, $2)',
 
 	// Deletion
 	del_car: 'DELETE FROM cp_driver_drives WHERE email=$1 AND car_plate_no=$2',

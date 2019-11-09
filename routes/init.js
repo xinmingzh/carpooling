@@ -63,6 +63,7 @@ function initRouter(app) {
 
 	app.post('/add_payment', passport.authMiddleware(), add_payment);
 	app.post('/add_driver_info', passport.authMiddleware(), add_driver_info);
+	app.post('/add_upcoming_ride', passport.authMiddleware(), add_upcoming_ride)
 
 	/* LOGIN */
 	app.post('/login', passport.authenticate('local', {
@@ -683,19 +684,19 @@ function ride_details(req, res, next) {
 			ctx = data.rows.length;
 			tbl = data.rows;
 			var estimated_price;
-			pool.query(sql_query.query.estimated_price, [tbl[0].pick_up_area, tbl[0].drop_off_area], (err, data) => {
-			  if (err || !data.rows || data.rows.length == 0) {
-			    estimated_price = 0;
-        } else {
-          estimated_price = data.rows[0].avg_price;
-        }
-        if (!req.isAuthenticated()) {
-          res.render('ride_details', {page: 'ride_details', auth: false, tbl: tbl, ctx: ctx});
-        } else {
-          basic(req, res, 'ride_details', {page: 'ride_details', auth: true, tbl:tbl, ctx: ctx, pass_msg: '', estimated_price: estimated_price});
-        }
-      });
 		}
+		pool.query(sql_query.query.estimated_price, [tbl[0].pick_up_area, tbl[0].drop_off_area], (err, data) => {
+			if (err || !data.rows || data.rows.length == 0) {
+				estimated_price = 0;
+			} else {
+				estimated_price = data.rows[0].avg_price;
+			}
+			if (!req.isAuthenticated()) {
+				res.render('ride_details', {page: 'ride_details', auth: false, tbl: tbl, ctx: ctx});
+			} else {
+				basic(req, res, 'ride_details', {page: 'ride_details', auth: true, tbl:tbl, ctx: ctx, pass_msg: '', estimated_price: estimated_price});
+			}
+		});
 	});
 }
 
@@ -779,6 +780,14 @@ function del_bid(req, res, next) {
 			});
 		}
 	});
+}
+
+function add_upcoming_ride(req, res, next) {
+	let driver_email = req.user.email;
+	let ride_details = req.body.journey;
+	let passenger_email, car_plate_no, pick_up_time;
+	[passenger_email, car_plate_no, pick_up_time] = ride_details.split(",");
+	res.redirect('/journeys');
 }
 
 // LOGOUT

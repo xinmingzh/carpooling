@@ -187,8 +187,8 @@ INSERT INTO cp_passenger_bid VALUES ('y@passenger.com', 'g@both.com', 'carplate0
 INSERT INTO cp_passenger_bid VALUES ('u@passenger.com', 'g@both.com', 'carplate01', '2019-11-07 13:00:00', 'pickupAddress', 'dropoffAddress', '2019-11-07 06:25:00', 14, 2, FALSE);
 
 INSERT INTO cp_journey_occurs VALUES ('z@passenger.com', 'g@both.com', 'carplate01', '2019-11-07 13:00:00', '2019-11-07 13:00:00', '2019-11-07 13:30:00', NULL);
-INSERT INTO cp_driver_rates VALUES ('2019-11-07 13:00:00', 'g@both.com', 3);
-INSERT INTO cp_passenger_rates VALUES ('2019-11-07 13:00:00', 'z@passenger.com', 3);
+INSERT INTO cp_driver_rates VALUES ('2019-11-07 13:00:00', 'g@both.com', 4);
+INSERT INTO cp_passenger_rates VALUES ('2019-11-07 13:00:00', 'z@passenger.com', 4);
 INSERT INTO cp_payment VALUES ('2019-11-07 13:00:00', 'z@passenger.com', 't', 'card');
 
 INSERT INTO cp_passenger_bid VALUES ('z@passenger.com', 'g@both.com', 'carplate01', '2019-11-07 21:00:00', 'pickupAddress', 'dropoffAddress', '2019-11-07 06:51:00', 31, 2, FALSE);
@@ -198,8 +198,8 @@ INSERT INTO cp_passenger_bid VALUES ('e@both.com', 'g@both.com', 'carplate01', '
 INSERT INTO cp_passenger_bid VALUES ('u@passenger.com', 'g@both.com', 'carplate01', '2019-11-07 21:00:00', 'pickupAddress', 'dropoffAddress', '2019-11-07 06:04:00', 32, 2, FALSE);
 
 INSERT INTO cp_journey_occurs VALUES ('e@both.com', 'g@both.com', 'carplate01', '2019-11-07 21:00:00', '2019-11-07 21:00:00', '2019-11-07 21:30:00', NULL);
-INSERT INTO cp_driver_rates VALUES ('2019-11-07 21:00:00', 'g@both.com', 3);
-INSERT INTO cp_passenger_rates VALUES ('2019-11-07 21:00:00', 'e@both.com', 3);
+INSERT INTO cp_driver_rates VALUES ('2019-11-07 21:00:00', 'g@both.com', 4);
+INSERT INTO cp_passenger_rates VALUES ('2019-11-07 21:00:00', 'e@both.com', 4);
 INSERT INTO cp_payment VALUES ('2019-11-07 21:00:00', 'e@both.com', 'f', 'cash');
 
 INSERT INTO cp_passenger_bid VALUES ('z@passenger.com', 'a@both.com', 'carplate01', '2019-11-08 01:00:00', 'pickupAddress', 'dropoffAddress', '2019-11-07 06:04:00', 24, 2, TRUE);
@@ -243,7 +243,7 @@ INSERT INTO cp_passenger_bid VALUES ('c@both.com', 'g@both.com', 'carplate01', '
 
 INSERT INTO cp_journey_occurs VALUES ('u@passenger.com', 'g@both.com', 'carplate01', '2019-11-08 13:00:00', '2019-11-08 13:00:00', '2019-11-08 13:30:00', NULL);
 INSERT INTO cp_driver_rates VALUES ('2019-11-08 13:00:00', 'g@both.com', 3);
-INSERT INTO cp_passenger_rates VALUES ('2019-11-08 13:00:00', 'u@passenger.com', 3);
+INSERT INTO cp_passenger_rates VALUES ('2019-11-08 13:00:00', 'u@passenger.com', 4);
 INSERT INTO cp_payment VALUES ('2019-11-08 13:00:00', 'u@passenger.com', 'f', 'cash');
 
 INSERT INTO cp_passenger_bid VALUES ('a@both.com', 'h@both.com', 'carplate01', '2019-11-08 13:00:00', 'pickupAddress', 'dropoffAddress', '2019-11-07 06:56:00', 43, 2, FALSE);

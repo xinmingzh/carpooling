@@ -114,8 +114,8 @@
 												<form action="/del_journey" method="post">
 													<button type="submit" name="journey" value="<%= tbl[i].car_plate_no %>, <%= tbl[i].pick_up_time %>" class="btn btn-danger btn-sm float-right">Cancel</button>
 												</form>
-												<form method="post">
-													<button type="submit" name="journey" value="<%= tbl[i].car_plate_no %>, <%= tbl[i].pick_up_time %>" class="btn btn-info btn-sm float-right">Get Best Bid</button>
+												<form action="/add_upcoming_ride" method="post">
+													<button type="submit" name="journey" value="<%= tbl[i].passenger_email %>,<%= tbl[i].car_plate_no %>,<%= tbl[i].pick_up_time %>" class="btn btn-info btn-sm float-right">Get Best Bid</button>
 												</form>
 											</td>
 										</tr>
