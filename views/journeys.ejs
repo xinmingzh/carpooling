@@ -112,10 +112,10 @@
 											<td align="center">
 												<%= tbl[i].bid_end_time.toDateString() %> <br> <%= tbl[i].bid_end_time.toLocaleTimeString() %>
 												<form action="/del_journey" method="post">
-													<button type="submit" name="journey" value="<%= tbl[i].car_plate_no %>, <%= tbl[i].pick_up_time.toISOString() %>" class="btn btn-danger btn-sm float-right">Cancel</button>
+													<button type="submit" name="journey" value="<%= tbl[i].car_plate_no %>, <%= tbl[i].pick_up_time %>" class="btn btn-danger btn-sm float-right">Cancel</button>
 												</form>
 												<form method="post">
-													<button type="submit" name="journey" value="<%= tbl[i].car_plate_no %>, <%= tbl[i].pick_up_time.toISOString() %>" class="btn btn-info btn-sm float-right">Update</button>
+													<button type="submit" name="journey" value="<%= tbl[i].car_plate_no %>, <%= tbl[i].pick_up_time %>" class="btn btn-info btn-sm float-right">Get Best Bid</button>
 												</form>
 											</td>
 										</tr>
@@ -218,13 +218,28 @@
 															<td align="center"><%= tbl_completed[i].journey_end_time.toDateString() %> <br> <%= tbl_completed[i].journey_end_time.toLocaleTimeString() %></td>
 												<td align="center">
 													<%= tbl_completed[i].journey_distance %>
-													<form action="/" method="post">
-														<button type="submit" name="journey" class="btn btn-info btn-sm float-right">Picked Up</button>
-													</form>
 												</td>
 												<td>
-
-													</td>
+													<form method="post" action="/rate_passenger">
+														<label class="radio-inline">
+															<input type="radio" name="optradio" value="1">
+														</label>
+														<label class="radio-inline">
+															<input type="radio" name="optradio" value="2">
+														</label>
+														<label class="radio-inline">
+															<input type="radio" name="optradio" value="3">
+														</label>
+														<label class="radio-inline">
+															<input type="radio" name="optradio" value="4">
+														</label>
+														<label class="radio-inline">
+															<input type="radio" name="optradio" value="5">
+														</label>
+													<!-- <input data-role="rating" data-values="1, 2, 3, 4, 5"> -->
+													<button type="submit" name="info" value="<%= tbl_completed[i].journey_start_time %>">Rate</button>
+													</form>
+												</td>
 											</tr>
 											<% } %>
 										</tbody>
