@@ -40,6 +40,7 @@ function initRouter(app) {
 	app.get('/bids'    	, passport.authMiddleware(), bids);
 	app.get('/driverinfo', passport.authMiddleware(), driverinfo);
 	app.get('/')
+  app.get('/passenger-journeys', passport.authMiddleware(), passenger_rides);
 
 	//app.get('/rides', passport.authMiddleware(), rides);
 
@@ -186,7 +187,20 @@ function search(req, res, next) {
 
 
 function dashboard(req, res, next) {
-	basic(req, res, 'dashboard', { info_msg: msg(req, 'info', 'Information updated successfully', 'Error in updating information'), pass_msg: msg(req, 'pass', 'Password updated successfully', 'Error in updating password'), auth: true });
+	var ctx, tbl;
+	pool.query(sql_query.query.get_fan, [req.user.email], (err, data) => {
+		if (err) {
+			ctx = 0;
+			tbl = [];
+			console.log(err);
+		} else {
+			ctx = data.rows.length;
+			tbl = data.rows;
+		}
+		basic(req, res, 'dashboard', { ctx: ctx, tbl: tbl, info_msg: msg(req, 'info', 'Information updated successfully', 'Error in updating information'), pass_msg: msg(req, 'pass', 'Password updated successfully', 'Error in updating password'), auth: true });
+	});
+	//basic(req, res, 'dashboard', {ctx: 0, tbl: [], info_msg: msg(req, 'info', 'Information updated successfully', 'Error in updating information'), pass_msg: msg(req, 'pass', 'Password updated successfully', 'Error in updating password'), auth: true });
+
 }
 
 //view cars
@@ -266,7 +280,8 @@ function journeys(req, res, next) {
 				tbl = data.rows;
 			}
 			pool.query(sql_query.query.complete_journeys_driver, [req.user.email], (err, data) => {
-				if(err || !data.rows || data.rows.length == 0) {
+				let journeys_occuring;
+				if (err || !data.rows || data.rows.length == 0) {
 					ctx_completed = 0;
 					avg = 0;
 					tbl_completed = [];
@@ -280,12 +295,10 @@ function journeys(req, res, next) {
 						if (journeys_occuring[i].journey_start_time === null && journeys_occuring[i].journey_end_time === null) {
 							ctx_upcoming += 1
 							tbl_upcoming.push(journeys_occuring[i])
-						}
-						else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time === null) {
+						} else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time === null) {
 							ctx_ongoing += 1
 							tbl_ongoing.push(journeys_occuring[i])
-						}
-						else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time != null) {
+						} else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time != null) {
 							ctx_completed += 1
 							tbl_completed.push(journeys_occuring[i])
 						}
@@ -303,6 +316,37 @@ function journeys(req, res, next) {
 				});
 			});
 		});
+	});
+}
+
+function passenger_rides(req, res, next) {
+	var ctx = 0, tbl, ctx_cars = 0, cars, ctx_completed = 0, tbl_completed = [], ctx_ongoing = 0, tbl_ongoing = [], ctx_upcoming = 0, tbl_upcoming = [];
+	pool.query(sql_query.query.journeys_passenger, [req.user.email], (err, data) => {
+		if(err || !data.rows || data.rows.length == 0) {
+			ctx_completed = 0;
+			tbl_completed = [];
+			ctx_upcoming = 0;
+			tbl_upcoming = [];
+			ctx_ongoing = 0;
+			tbl_ongoing = [];
+		} else {
+			var journeys_occuring = data.rows;
+			for (var i = 0; i < journeys_occuring.length; i++) {
+				if (journeys_occuring[i].journey_start_time === null && journeys_occuring[i].journey_end_time === null) {
+					ctx_upcoming += 1
+					tbl_upcoming.push(journeys_occuring[i])
+				}
+				else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time === null) {
+					ctx_ongoing += 1
+					tbl_ongoing.push(journeys_occuring[i])
+				}
+				else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time != null) {
+					ctx_completed += 1
+					tbl_completed.push(journeys_occuring[i])
+				}
+			}
+		}
+		basic(req, res, 'passenger_journeys', { ctx_ongoing: ctx_ongoing, ctx_upcoming:ctx_upcoming, tbl_ongoing:tbl_ongoing, tbl_upcoming:tbl_upcoming, ctx: ctx, tbl: tbl, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
 	});
 }
 

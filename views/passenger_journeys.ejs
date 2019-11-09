@@ -1,0 +1,138 @@
+<%- include partials/profile.ejs %>
+<h1 class="h2">My Rides</h1>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fas fa-trophy"></i> &nbsp; Journey List
+    </div>
+    <div class="card-body">
+        <!-- Tab links -->
+        <div class="tab">
+            <button class="tablinks" onclick="openTab(event, 'upcoming')" id="defaultOpen">Upcoming</button>
+            <button class="tablinks" onclick="openTab(event, 'ongoing')">In Progress</button>
+            <button class="tablinks" onclick="openTab(event, 'complete')">Complete</button>
+        </div>
+
+        <div class="table-responsive tabcontent" id="upcoming">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                <tr>
+                    <th>Car</th>
+                    <th>Driver</th>
+                    <th>Pickup Time</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <th>Total: <i><%= ctx_upcoming %></i></th>
+                </tfoot>
+                <tbody>
+                <% for(var i=0; i<tbl_upcoming.length; i++) { %>
+                    <tr>
+                        <td align="center"><%= tbl_upcoming[i].car_plate_no %></td>
+                        <td align="center"><%= tbl_upcoming[i].driver_email %></td>
+                        <td align="center">
+                            <%= tbl_upcoming[i].pick_up_time.toDateString() %> <br>
+                            <%= tbl_upcoming[i].pick_up_time.toLocaleTimeString() %>
+                        </td>
+                    </tr>
+                <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-responsive tabcontent" id="ongoing">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                <tr>
+                    <th>Car</th>
+                    <th>Driver</th>
+                    <th>Pickup Time</th>
+                    <th>Journey Start</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <th>Total: <i><%= ctx_ongoing %></i></th>
+                <!-- <th>Win: <i></i></th> -->
+                <!-- <th>Avg: <i></i></th> -->
+                </tfoot>
+                <tbody>
+                <% for(var i=0; i<tbl_ongoing.length; i++) { %>
+                    <tr>
+                        <td align="center"><%= tbl_ongoing[i].car_plate_no %></td>
+                        <td align="center"><%= tbl_ongoing[i].driver_email %></td>
+                        <td align="center"><%= tbl_ongoing[i].pick_up_time.toDateString() %> <br> <%= tbl_ongoing[i].pick_up_time.toLocaleTimeString() %></td>
+                        <td align="center">
+                            <%= tbl_ongoing[i].journey_start_time.toDateString() %> <br><%= tbl_ongoing[i].journey_start_time.toLocaleTimeString() %>
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-responsive tabcontent" id="complete">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                <tr>
+                    <th>Car</th>
+                    <th>Passenger</th>
+                    <th>Pickup Time</th>
+                    <th>Journey Start Time</th>
+                    <th>Journey End Time</th>
+                    <th>Journey Distance</th>
+                    <th>Rate</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <th>Total: <i><%= ctx_completed %></i></th>
+                </tfoot>
+                <tbody>
+                <% for(var i=0; i<tbl_completed.length; i++) { %>
+                    <tr>
+                        <td align="center"><%= tbl_completed[i].car_plate_no %></td>
+                        <td align="center"><%= tbl_completed[i].driver_email %></td>
+                        <td align="center"><%= tbl_completed[i].pick_up_time.toDateString() %> <br> <%= tbl_completed[i].pick_up_time.toLocaleTimeString() %></td>
+                        <td align="center"><%= tbl_completed[i].journey_start_time.toDateString() %> <br> <%= tbl_completed[i].journey_start_time.toLocaleTimeString() %></td>
+                        <td align="center"><%= tbl_completed[i].journey_end_time.toDateString() %> <br> <%= tbl_completed[i].journey_end_time.toLocaleTimeString() %></td>
+                        <td align="center">
+                            <%= tbl_completed[i].journey_distance %>
+                        </td>
+                        <td>
+                            <form method="post" action="/rate_passenger">
+                                <label class="radio-inline">
+                                    <input type="radio" name="optradio" value="1">
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="optradio" value="2">
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="optradio" value="3">
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="optradio" value="4">
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="optradio" value="5">
+                                </label>
+                                <!-- <input data-role="rating" data-values="1, 2, 3, 4, 5"> -->
+                                <button type="submit" name="info" value="<%= tbl_completed[i].journey_start_time %>">Rate</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer small text-muted"><span class="badge badge-pill badge-info"><%= journey_msg %></span></div>
+</div>
+<%- include partials/footer.ejs %>
+</main>
+</div>
+</div>
+<%- include bottomscript.ejs %>
+</body>
+</html>
