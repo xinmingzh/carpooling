@@ -84,7 +84,9 @@ function initPassport() {
           return done(null, false);
         }
 
+        /*PASSWORD*/
         // Always use hashed passwords and fixed time comparison
+        /*
         bcrypt.compare(password, user.passwordHash, (err, isValid) => {
           if (err) {
             return done(err);
@@ -94,6 +96,13 @@ function initPassport() {
           }
           return done(null, user);
         })
+        */
+
+        if (password == user.passwordHash) {
+          return done(null, user);
+        } else {
+          return done(null, false);
+        }
       })
     }
   ));

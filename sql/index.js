@@ -16,14 +16,16 @@ sql.query = {
   valid_journeys: 'SELECT * FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_driver WHERE bid_end_time > NOW()::timestamp AND email=$1',
 	all_available_journeys: 'SELECT email, car_model, car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, to_char(pick_up_time, \'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_user WHERE bid_end_time > NOW()::timestamp',
 	single_passenger_bids: 'SELECT driver_email, firstname, lastname, car_plate_no, to_char(pick_up_time,\'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time, pick_up_address, drop_off_address, to_char(bid_time,\'YYYY-MM-DD HH24:MI:SS\') AS bid_time, bid_price, number_of_passengers FROM cp_passenger_bid NATURAL JOIN cp_advertised_journey NATURAL JOIN cp_driver NATURAL JOIN cp_user WHERE passenger_email=$1',
+  complete_journeys_driver: 'SELECT passenger_email, car_plate_no, pick_up_time, journey_start_time, journey_end_time, journey_distance FROM cp_journey_occurs WHERE driver_email=$1',
+	complete_journeys_passenger: 'SELECT driver_email, car_plate_no, pick_up_time, journey_start_time, journey_end_time, journey_distance FROM cp_journey_occurs WHERE passenger_email=$1 AND journey_end_time IS NOT NULL',
 	// Insertion
 	add_car: 'INSERT INTO cp_driver_drives (car_plate_no, car_model, max_passengers, email) VALUES($1, $2, $3, $4)',
 	advertise_journey: 'INSERT INTO cp_advertised_journey (email, car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, pick_up_time) VALUES ($1, $2, $8, $3, $4, $9, $5, $6, $7)',
 	add_user: 'INSERT INTO cp_user (email, account_creation_time, dob, gender, firstname, lastname, password) VALUES ($1, CURRENT_TIMESTAMP, $2, $3, $4, $5, $6)',
 	add_driver:		'INSERT INTO cp_driver (email) VALUES ($1)',
  	add_passenger:	'INSERT INTO cp_passenger (email, home_address, work_address) VALUES ($1, \'\', \'\')',
-	add_bid: 'INSERT INTO cp_passenger_bid (passenger_email, driver_email, car_plate_no, pick_up_time, pick_up_address, drop_off_address, bid_time, bid_price, number_of_passengers, bid_won) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NULL)',
-	
+	add_bid: 'INSERT INTO cp_passenger_bid (passenger_email, driver_email, car_plate_no, pick_up_time, pick_up_address, drop_off_address, bid_time, bid_price, number_of_passengers, bid_won) VALUES ($1, $2, $3, $4, $5, $6, date_trunc(\'second\', CURRENT_TIMESTAMP), $7, $8, NULL)',
+
 	add_cash_payment: 'INSERT INTO cp_payment_method (have_card, email) VALUES (\'f\', $1)',
 
 	// Login
@@ -62,9 +64,9 @@ sql.query = {
 	// 	GROUP BY passenger_email, driver_email, car_plate_no, pick_up_time
 	// ),
 	// highest_avg_rating AS (
-	// 	SELECT d.passenger_email, AVG(rating)  
+	// 	SELECT d.passenger_email, AVG(rating)
 	// 	FROM (cp_driver_rates NATURAL JOIN cp_journey_occurs) d
-	// 	WHERE 
+	// 	WHERE
 	// 	EXISTS (
 	// 		SELECT 1
 	// 		FROM cp_passenger_bid a
@@ -79,8 +81,8 @@ sql.query = {
 	// 	SELECT *,
 	// 	CASE WHEN (SELECT COUNT(*) FROM highest_bid_price) > 1 THEN 1 END AS bid_price_tie
 	// 	FROM cp_passenger_bid p
-	// ) 
-	// WHERE 
+	// )
+	// WHERE
 
 
 	/*
@@ -93,9 +95,9 @@ sql.query = {
 		SELECT *,
 		CASE WHEN (
 			SELECT COUNT(*) FROM journey_info j
-			WHERE j.pick_up_time > (CURRENT_TIMESTAMP - '1 week'::interval) 
+			WHERE j.pick_up_time > (CURRENT_TIMESTAMP - '1 week'::interval)
 			GROUP BY j.pick_up_area, j.drop_off_area, j.hour
-			
+
 			) >= 2 THEN 1 ELSE 0 END AS frequent_pick_up_area
 		FROM journey_info
 	)
@@ -103,11 +105,11 @@ sql.query = {
 	FROM x
 	WHERE frequent_pick_up_area = 1;
 	*/
-	
+
 
 	//
 
-	
+
 
 
 

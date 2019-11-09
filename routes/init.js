@@ -160,7 +160,7 @@ function bids(req, res, next) {
 }
 
 function ridelist(req, res, next) {
-	pool.query(sql_query.query.valid_journeys, [], (err, data) => {
+	pool.query(sql_query.query.all_available_journeys, [], (err, data) => {
 		if(err || !data.rows || data.rows.length == 0) {
 			ctx = 0;
 			tbl = [];
@@ -263,7 +263,7 @@ function del_car(req, res, next) {
 }
 
 function journeys(req, res, next) {
-	var avg = 0, ctx = 0, tbl, ctx_cars = 0, cars;
+	var win = 0, avg = 0, ctx = 0, tbl, ctx_cars = 0, cars, ctx_completed = 0, tbl_completed;
 	pool.query(sql_query.query.count_wins, [req.user.username], (err, data) => {
 		if(err || !data.rows || data.rows.length == 0) {
 			win = 0;
@@ -280,15 +280,25 @@ function journeys(req, res, next) {
 				avg = win == 0 ? 0 : win/ctx;
 				tbl = data.rows;
 			}
-			pool.query(sql_query.query.all_cars, [req.user.email], (err, data) => {
+			pool.query(sql_query.query.complete_journeys_driver, [req.user.email], (err, data) => {
 				if(err || !data.rows || data.rows.length == 0) {
-					ctx_cars = 0;
-					cars = [];
+					ctx_completed = 0;
+					avg = 0;
+					tbl_completed = [];
 				} else {
-					ctx_cars = data.rows.length;
-					cars = data.rows;
+					ctx_completed = data.rows.length;
+					tbl_completed = data.rows;
 				}
-				basic(req, res, 'journeys', { win: win, ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
+				pool.query(sql_query.query.all_cars, [req.user.email], (err, data) => {
+					if(err || !data.rows || data.rows.length == 0) {
+						ctx_cars = 0;
+						cars = [];
+					} else {
+						ctx_cars = data.rows.length;
+						cars = data.rows;
+					}
+					basic(req, res, 'journeys', { win: win, ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
+				});
 			});
 		});
 	});
@@ -318,7 +328,8 @@ function update_info(req, res, next) {
 }
 function update_pass(req, res, next) {
 	var email = req.user.email;
-	var password = bcrypt.hashSync(req.body.password, salt);
+	/*PASSWORD*/
+	var password = password //bcrypt.hashSync(req.body.password, salt);
 	pool.query(sql_query.query.update_pass, [email, password], (err, data) => {
 		if(err) {
 			console.error("Error in update pass");
@@ -351,7 +362,7 @@ function add_journey(req, res, next) {
 	var maxPassengers = parseInt(req.body.carmaxpass);
 	var pickupArea  = req.body.pickuparea;
 	var dropoffArea  = req.body.dropoffarea;
-	var pickuptime = req.body.pickuptime.toString();
+	var pickuptime = req.body.pickuptime;
 	var dropofftime   = req.body.dropofftime;
 	var bidStart = req.body.bidstart;
 	var bidEnd = req.body.bidend;
@@ -359,11 +370,9 @@ function add_journey(req, res, next) {
 
 	pool.query(sql_query.query.advertise_journey, [email, carplate, pickupArea, dropoffArea, bidStart, bidEnd, pickuptime, maxPassengers, minBid], (err, data) => {
 		if(err) {
-			console.log(err)
 			console.error("Error in adding journey");
 			res.redirect('/journeys?add=fail');
 		} else {
-			console.log(data)
 			res.redirect('/journeys?add=pass');
 		}
 	});
@@ -427,7 +436,6 @@ function add_payment(req, res, next) {
 }
 
 function add_driver_info(req, res, next) {
-	console.log("AAAA");
 	var bank_account_no = req.body.bank_account_no;
 	var license_no = req.body.license_no;
 	var email = req.user.email;
@@ -450,7 +458,8 @@ function add_driver_info(req, res, next) {
 
 function reg_user(req, res, next) {
 	var email  = req.body.email;
-	var password  = bcrypt.hashSync(req.body.password, salt);
+	/*PASSWORD*/
+	var password  = req.body.password //bcrypt.hashSync(req.body.password, salt);
 	var firstname = req.body.firstname;
 	var lastname  = req.body.lastname;
 	var dob = req.body.dob;
@@ -506,6 +515,7 @@ function ride_details(req, res, next) {
 	var pick_up_time = req.query['pick_up_time'];
 	var car_plate_no = req.query['car_plate_no'];
 
+	var ctx, tbl;
 	pool.query(sql_query.query.find_advertised_ride, [email, pick_up_time, car_plate_no], (err, data) => {
 		if (err || !data.rows || data.rows.length == 0) {
 			ctx = 0;
@@ -513,6 +523,7 @@ function ride_details(req, res, next) {
 		} else {
 			ctx = data.rows.length;
 			tbl = data.rows;
+			pool.query(sql_query.query.estimated_price, )
 		}
 		if (!req.isAuthenticated()) {
 			res.render('ride_details', {page: 'ride_details', auth: false, tbl: tbl, ctx: ctx});
@@ -547,13 +558,12 @@ function add_bid(req, res, next) {
 	let pick_up_time = req.body.pick_up_time;
 	let pick_up_address = req.body.pick_up_address;
 	let drop_off_address = req.body.drop_off_address;
-	let bid_time = (new Date()).toISOString().slice(0, 19).replace('T', ' ');
 	let bid_price = req.body.bid_price;
 	let passenger_no = req.body.number_of_passengers;
 
 	var tbl, ctx = 0;
 	pool.query(sql_query.query.add_bid, [passenger_email, driver_email, car_plate_no, pick_up_time, pick_up_address,
-		drop_off_address, bid_time, bid_price, passenger_no], (err, data) => {
+		drop_off_address, bid_price, passenger_no], (err, data) => {
 		if (err || !data.rows || data.rows.length == 0) {
 			ctx = 0;
 			tbl = [];

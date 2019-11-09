@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS cp_user (
 -- Information is added when user specifies to be a driver
 CREATE TABLE IF NOT EXISTS cp_driver (
     email TEXT PRIMARY KEY REFERENCES cp_user ON DELETE CASCADE ON UPDATE CASCADE,
-    bank_account_no INTEGER, --must not be null for driver to receive money
+    bank_account_no TEXT, --must not be null for driver to receive money
     license_no TEXT --driver must state license
 );
 
@@ -374,7 +374,7 @@ BEGIN
 
     -- );
 
-    -- IF NOT(check_winning_bid = 0 OR check_winning_bid = 1) 
+    -- IF NOT(check_winning_bid = 0 OR check_winning_bid = 1)
 
     RETURN NEW;
 END;
