@@ -13,7 +13,7 @@ sql.query = {
 	all_games: 'SELECT ranking,game_list.gamename AS game,rating FROM user_games INNER JOIN game_list ON user_games.gamename=game_list.gamename WHERE username=$1 ORDER BY ranking ASC',
 	all_cars:  'SELECT * FROM cp_driver_drives WHERE email=$1',
 	all_journeys: 'SELECT car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, pick_up_time FROM cp_advertised_journey WHERE email=$1',
-  	valid_journeys: 'SELECT * FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_driver WHERE bid_end_time > NOW()::timestamp AND email=$1',
+	valid_journeys: 'SELECT * FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_driver WHERE bid_end_time > NOW()::timestamp AND email=$1',
 	all_available_journeys: 'SELECT email, car_model, car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, to_char(pick_up_time, \'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_user WHERE bid_end_time > NOW()::timestamp',
 	single_passenger_bids: 'SELECT driver_email, firstname, lastname, car_plate_no, to_char(pick_up_time,\'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time, pick_up_address, drop_off_address, to_char(bid_time,\'YYYY-MM-DD HH24:MI:SS\') AS bid_time, bid_price, number_of_passengers FROM cp_passenger_bid NATURAL JOIN cp_advertised_journey NATURAL JOIN cp_driver NATURAL JOIN cp_user WHERE passenger_email=$1',
   complete_journeys_driver: 'SELECT passenger_email, car_plate_no, pick_up_time, journey_start_time, journey_end_time, journey_distance FROM cp_journey_occurs WHERE driver_email=$1',
@@ -58,7 +58,6 @@ sql.query = {
 
 	//complex queries
 	choose_best_bid: '',
-	recommended_ride: '',
 
 	// WITH highest_bid_price AS (
 	// 	SELECT passenger_email, MAX(bid_price)
@@ -89,32 +88,9 @@ sql.query = {
 	// WHERE
 
 
-	/*
+
 	//For our last complex query maybe we can do a recommendation of sorts for new journeys to the passenger based on old ride timings, destinations and drivers etc.
-	WITH journey_info AS (
-	SELECT pick_up_area, drop_off_area, pick_up_time, EXTRACT(HOUR FROM DATE_TRUNC('hour', pick_up_time + interval '30 minute')) AS hour
-	FROM cp_journey_occurs NATURAL JOIN cp_passenger_bid NATURAL JOIN cp_advertised_journey
-	),
-	x AS (
-		SELECT *,
-		CASE WHEN (
-			SELECT COUNT(*) FROM journey_info j
-			WHERE j.pick_up_time > (CURRENT_TIMESTAMP - '1 week'::interval)
-			GROUP BY j.pick_up_area, j.drop_off_area, j.hour
-
-			) >= 2 THEN 1 ELSE 0 END AS frequent_pick_up_area
-		FROM journey_info
-	)
-	SELECT DISTINCT pick_up_area, drop_off_area, pick_up_time
-	FROM x
-	WHERE frequent_pick_up_area = 1;
-	*/
-
-
-	//
-
-
-
+	recommended_ride: 'WITH journey_info AS (SELECT pick_up_area, drop_off_area, pick_up_time, EXTRACT(HOUR FROM DATE_TRUNC(\'hour\', pick_up_time + interval \'30 minute\')) AS hour FROM cp_journey_occurs NATURAL JOIN cp_passenger_bid NATURAL JOIN cp_advertised_journey WHERE passenger_email=$1) SELECT DISTINCT pick_up_area, drop_off_area, hour, COUNT(*) FROM journey_info WHERE pick_up_time > (CURRENT_TIMESTAMP - \'1 week\'::interval) GROUP BY pick_up_area, drop_off_area, hour HAVING COUNT(*) >= 2;',
 
 
 }

@@ -597,6 +597,8 @@ function ride_details(req, res, next) {
 }
 
 function available_rides(req, res, next) {
+  var passenger_email = req.user.email;
+
 	var tbl, ctx = 0;
 	pool.query(sql_query.query.all_available_journeys, [], (err,data) => {
 		if (err || !data.rows || data.rows.length == 0) {
@@ -606,11 +608,20 @@ function available_rides(req, res, next) {
 			ctx = data.rows.length;
 			tbl = data.rows;
 		}
-		if (!req.isAuthenticated()) {
-			res.render('available_rides', {page: 'available_rides', auth: false, tbl: tbl, ctx: ctx});
-		} else {
-			basic(req, res, 'available_rides', {page: 'available_rides', auth: true, tbl:tbl, ctx: ctx});
-		}
+		var rcmd_rides
+		pool.query(sql_query.query.recommended_ride, [passenger_email], (err, data) => {
+		  if (err) {
+		    console.log(err);
+		    rcmd_rides = []
+      } else {
+		    rcmd_rides = data.rows;
+      }
+      if (!req.isAuthenticated()) {
+        res.render('available_rides', {page: 'available_rides', auth: false, tbl: tbl, ctx: ctx});
+      } else {
+        basic(req, res, 'available_rides', {page: 'available_rides', auth: true, tbl:tbl, ctx: ctx, rcmd_rides:rcmd_rides });
+      }
+    });
 	});
 }
 

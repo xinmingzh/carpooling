@@ -25,7 +25,35 @@
                 <th>Total: <i><%= ctx %></i></th>
                 </tfoot>
                 <tbody>
+                <% var rides_left = [] %>
                 <% for(var i = 0; i < tbl.length; i++) { %>
+                    <% for (var j=0, k=0; j < rcmd_rides.length; j++) { %>
+                        <% if (tbl[i].pick_up_area == rcmd_rides[j].pick_up_area && tbl[i].drop_off_area == rcmd_rides[j].drop_off_area && tbl[i].pick_up_time.getHours() == rcmd_rides[j].hour) { %>
+                            <tr class="table-success">
+                                <td align="center"><%= tbl[i].car_plate_no %></td>
+                                <td align="center"><%= tbl[i].max_passengers %></td>
+                                <td align="center"> <%= tbl[i].pick_up_area %> </td>
+                                <td align="center"> <%= tbl[i].pick_up_time %> </td>
+                                <td align="center"><%= tbl[i].drop_off_area %></td>
+                                <td align="center"><%= tbl[i].min_bid %></td>
+                                <td align="center"><%= tbl[i].bid_start_time.toDateString() %>
+                                    <br> <%= tbl[i].bid_start_time.toLocaleTimeString() %></td>
+                                <td align="center"><%= tbl[i].bid_end_time.toDateString() %>
+                                    <br> <%= tbl[i].bid_end_time.toLocaleTimeString() %></td>
+                                <td align="center">
+                                    <a class="btn btn-info"
+                                       href="../ride-details?email=<%= tbl[i].email %>&pick_up_time=<%= tbl[i].pick_up_time %>&car_plate_no=<%= tbl[i].car_plate_no %>">
+                                        Bid
+                                    </a>
+                                </td>
+                            </tr>
+                            <% k = 1; %>
+                            <% break; %>
+                        <% } %>
+                    <% } %>
+                    <% if (k == 0) { rides_left.push(tbl[i]) } %>
+                <% } %>
+                <% for(var i = 0; i < rides_left.length; i++) { %>
                     <tr>
                         <td align="center"><%= tbl[i].car_plate_no %></td>
                         <td align="center"><%= tbl[i].max_passengers %></td>
