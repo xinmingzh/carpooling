@@ -144,7 +144,7 @@ function bids(req, res, next) {
 }
 
 function ridelist(req, res, next) {
-	pool.query(sql_query.query.valid_journeys, [], (err, data) => {
+	pool.query(sql_query.query.all_available_journeys, [], (err, data) => {
 		if(err || !data.rows || data.rows.length == 0) {
 			ctx = 0;
 			tbl = [];
@@ -346,7 +346,7 @@ function add_journey(req, res, next) {
 	var maxPassengers = parseInt(req.body.carmaxpass);
 	var pickupArea  = req.body.pickuparea;
 	var dropoffArea  = req.body.dropoffarea;
-	var pickuptime = req.body.pickuptime.toString();
+	var pickuptime = req.body.pickuptime;
 	var dropofftime   = req.body.dropofftime;
 	var bidStart = req.body.bidstart;
 	var bidEnd = req.body.bidend;
@@ -354,11 +354,9 @@ function add_journey(req, res, next) {
 
 	pool.query(sql_query.query.advertise_journey, [email, carplate, pickupArea, dropoffArea, bidStart, bidEnd, pickuptime, maxPassengers, minBid], (err, data) => {
 		if(err) {
-			console.log(err)
 			console.error("Error in adding journey");
 			res.redirect('/journeys?add=fail');
 		} else {
-			console.log(data)
 			res.redirect('/journeys?add=pass');
 		}
 	});
