@@ -1,3 +1,5 @@
+/*THIS SET OF DATA ASSUMES THAT THE CURRENT TIME IS 1.15PM ON 12NOVEMBER 2019*/
+
 /*Add into cp_user*/
 -- a to n is both driver and passenger
 INSERT INTO cp_user VALUES ('a@both.com', '2019-11-07 00:00:00', '2000-01-01','m', 'a', 'a', 'a');
@@ -243,7 +245,7 @@ INSERT INTO cp_passenger_bid VALUES ('c@both.com', 'g@both.com', 'carplate01', '
 
 INSERT INTO cp_journey_occurs VALUES ('u@passenger.com', 'g@both.com', 'carplate01', '2019-11-08 13:00:00', '2019-11-08 13:00:00', '2019-11-08 13:30:00', NULL);
 INSERT INTO cp_driver_rates VALUES ('2019-11-08 13:00:00', 'g@both.com', 3);
-INSERT INTO cp_passenger_rates VALUES ('2019-11-08 13:00:00', 'u@passenger.com', 3);
+INSERT INTO cp_passenger_rates VALUES ('2019-11-08 13:00:00', 'u@passenger.com', 4);
 INSERT INTO cp_payment VALUES ('2019-11-08 13:00:00', 'u@passenger.com', 'f', 'cash');
 
 INSERT INTO cp_passenger_bid VALUES ('a@both.com', 'h@both.com', 'carplate01', '2019-11-08 13:00:00', 'pickupAddress', 'dropoffAddress', '2019-11-07 06:56:00', 43, 2, FALSE);
