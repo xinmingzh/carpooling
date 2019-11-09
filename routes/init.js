@@ -302,7 +302,8 @@ function update_info(req, res, next) {
 }
 function update_pass(req, res, next) {
 	var email = req.user.email;
-	var password = bcrypt.hashSync(req.body.password, salt);
+	/*PASSWORD*/
+	var password = password //bcrypt.hashSync(req.body.password, salt);
 	pool.query(sql_query.query.update_pass, [email, password], (err, data) => {
 		if(err) {
 			console.error("Error in update pass");
@@ -434,7 +435,8 @@ function add_driver_info(req, res, next) {
 
 function reg_user(req, res, next) {
 	var email  = req.body.email;
-	var password  = bcrypt.hashSync(req.body.password, salt);
+	/*PASSWORD*/
+	var password  = req.body.password //bcrypt.hashSync(req.body.password, salt);
 	var firstname = req.body.firstname;
 	var lastname  = req.body.lastname;
 	var dob = req.body.dob;
