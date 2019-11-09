@@ -52,9 +52,11 @@ function initRouter(app) {
 	app.post('/update_pass', passport.authMiddleware(), update_pass);
 	app.post('/add_car'    , passport.authMiddleware(), add_car);
 	app.post('/add_journey', passport.authMiddleware(), add_journey);
+	app.post('/add_bid'		 , passport.authMiddleware(), add_bid);
 	app.post('/del_car'    , passport.authMiddleware(), del_car);
 	app.post('/del_journey', passport.authMiddleware(), del_journey);
-	app.post('/add_bid', passport.authMiddleware(), add_bid);
+	app.post('/del_bid'		 , passport.authMiddleware(), del_bid);
+	app.post('/rate_passenger', passport.authMiddleware(), rate_passenger);
 
 	app.post('/reg_user'   , passport.antiMiddleware(), reg_user);
 
@@ -140,11 +142,26 @@ function payment(req, res, next) {
 }
 
 function bids(req, res, next) {
-	basic(req, res, 'bids', { info_msg: msg(req, 'info', 'Information updated successfully', 'Error in updating information'), pass_msg: msg(req, 'pass', 'Password updated successfully', 'Error in updating password'), auth: true });
+	let email = req.user.email;
+	var tbl, ctx = 0;
+	pool.query(sql_query.query.single_passenger_bids, [email], (err,data) => {
+		if (err || !data.rows || data.rows.length == 0) {
+			ctx = 0;
+			tbl = [];
+		} else {
+			ctx = data.rows.length;
+			tbl = data.rows;
+		}
+		if (!req.isAuthenticated()) {
+			res.render('bids', {page: 'bids', auth: false, tbl: tbl, ctx: ctx});
+		} else {
+			basic(req, res, 'bids', {page: 'bids', auth: true, tbl: tbl, ctx: ctx, bid_msg: ''});
+		}
+	});
 }
 
 function ridelist(req, res, next) {
-	pool.query(sql_query.query.valid_journeys, [], (err, data) => {
+	pool.query(sql_query.query.all_available_journeys, [], (err, data) => {
 		if(err || !data.rows || data.rows.length == 0) {
 			ctx = 0;
 			tbl = [];
@@ -247,7 +264,7 @@ function del_car(req, res, next) {
 }
 
 function journeys(req, res, next) {
-	var avg = 0, ctx = 0, tbl, ctx_cars = 0, cars;
+	var win = 0, avg = 0, ctx = 0, tbl, ctx_cars = 0, cars, ctx_completed = 0, tbl_completed;
 	pool.query(sql_query.query.count_wins, [req.user.username], (err, data) => {
 		if(err || !data.rows || data.rows.length == 0) {
 			win = 0;
@@ -264,15 +281,25 @@ function journeys(req, res, next) {
 				avg = win == 0 ? 0 : win/ctx;
 				tbl = data.rows;
 			}
-			pool.query(sql_query.query.all_cars, [req.user.email], (err, data) => {
+			pool.query(sql_query.query.complete_journeys_driver, [req.user.email], (err, data) => {
 				if(err || !data.rows || data.rows.length == 0) {
-					ctx_cars = 0;
-					cars = [];
+					ctx_completed = 0;
+					avg = 0;
+					tbl_completed = [];
 				} else {
-					ctx_cars = data.rows.length;
-					cars = data.rows;
+					ctx_completed = data.rows.length;
+					tbl_completed = data.rows;
 				}
-				basic(req, res, 'journeys', { win: win, ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
+				pool.query(sql_query.query.all_cars, [req.user.email], (err, data) => {
+					if(err || !data.rows || data.rows.length == 0) {
+						ctx_cars = 0;
+						cars = [];
+					} else {
+						ctx_cars = data.rows.length;
+						cars = data.rows;
+					}
+					basic(req, res, 'journeys', { win: win, ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
+				});
 			});
 		});
 	});
@@ -287,6 +314,50 @@ function retrieve(req, res, next) {
 
 
 // POST
+function rate_passenger(req, res, next) {
+	var win = 0, avg = 0, ctx = 0, tbl, ctx_cars = 0, cars, ctx_completed = 0, tbl_completed;
+	let rating = parseInt(req.body.optradio)
+	let journeyStart = moment(new Date(req.body.info)).format('YYYY-MM-DD HH:mm:ss')
+	pool.query(sql_query.query.rate_passenger, [journeyStart, req.user.email, rating], (err, data) => {
+		if (err) {
+			console.log(err)
+		} else {
+				pool.query(sql_query.query.all_journeys, [req.user.email], (err, data) => {
+					if(err || !data.rows || data.rows.length == 0) {
+						ctx = 0;
+						avg = 0;
+						tbl = [];
+					} else {
+						ctx = data.rows.length;
+						avg = win == 0 ? 0 : win/ctx;
+						tbl = data.rows;
+					}
+					pool.query(sql_query.query.complete_journeys_driver, [req.user.email], (err, data) => {
+						if(err || !data.rows || data.rows.length == 0) {
+							ctx_completed = 0;
+							avg = 0;
+							tbl_completed = [];
+						} else {
+							ctx_completed = data.rows.length;
+							tbl_completed = data.rows;
+						}
+						pool.query(sql_query.query.all_cars, [req.user.email], (err, data) => {
+							if(err || !data.rows || data.rows.length == 0) {
+								ctx_cars = 0;
+								cars = [];
+							} else {
+								ctx_cars = data.rows.length;
+								cars = data.rows;
+							}
+							basic(req, res, 'journeys', { win: win, ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, rating: rating, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Rating added successfully', 'Invalid parameter in rating or rating has already been made.'), auth: true });
+						});
+					});
+				});
+			}
+			});
+}
+
+
 function update_info(req, res, next) {
 	var email  = req.user.email;
 	var firstname = req.body.firstname;
@@ -300,6 +371,7 @@ function update_info(req, res, next) {
 		}
 	});
 }
+
 function update_pass(req, res, next) {
 	var email = req.user.email;
 	/*PASSWORD*/
@@ -336,7 +408,7 @@ function add_journey(req, res, next) {
 	var maxPassengers = parseInt(req.body.carmaxpass);
 	var pickupArea  = req.body.pickuparea;
 	var dropoffArea  = req.body.dropoffarea;
-	var pickuptime = req.body.pickuptime.toString();
+	var pickuptime = req.body.pickuptime;
 	var dropofftime   = req.body.dropofftime;
 	var bidStart = req.body.bidstart;
 	var bidEnd = req.body.bidend;
@@ -344,11 +416,9 @@ function add_journey(req, res, next) {
 
 	pool.query(sql_query.query.advertise_journey, [email, carplate, pickupArea, dropoffArea, bidStart, bidEnd, pickuptime, maxPassengers, minBid], (err, data) => {
 		if(err) {
-			console.log(err)
 			console.error("Error in adding journey");
 			res.redirect('/journeys?add=fail');
 		} else {
-			console.log(data)
 			res.redirect('/journeys?add=pass');
 		}
 	});
@@ -356,9 +426,9 @@ function add_journey(req, res, next) {
 
 function del_journey(req, res, next) {
 	let carplate = req.body.journey.split(",")[0].trim()
-	let pickuptime = req.body.journey.split(",")[1].trim().replace("T", " ").replace("Z", "").split(".")[0]
+	let pickuptime = moment(new Date(req.body.journey.split(",")[1].trim())).format('YYYY-MM-DD HH:mm:ss')
 
-	var ctx = 0, avg = 0, tbl = [], ctx_cars = 0, cars=[];
+	var ctx = 0, avg = 0, tbl = [], ctx_cars = 0, cars=[], ctx_completed=0;
 	// pool.query(sql_query.query.avg_rating, [req.user.username], (err, data) => {
 	// 	if(err || !data.rows || data.rows.length == 0) {
 	// 		avg = 0;
@@ -369,14 +439,23 @@ function del_journey(req, res, next) {
 			if(err) {
 				console.log(err)
 			} else {}
-				pool.query(sql_query.query.all_journeys, [req.user.email], (err, data) => {
+			pool.query(sql_query.query.all_journeys, [req.user.email], (err, data) => {
+				if(err || !data.rows || data.rows.length == 0) {
+					ctx = 0;
+					avg = 0;
+					tbl = [];
+				} else {
+					ctx = data.rows.length;
+					tbl = data.rows;
+				}
+				pool.query(sql_query.query.complete_journeys_driver, [req.user.email], (err, data) => {
 					if(err || !data.rows || data.rows.length == 0) {
-						ctx = 0;
+						ctx_completed = 0;
 						avg = 0;
-						tbl = [];
+						tbl_completed = [];
 					} else {
-						ctx = data.rows.length;
-						tbl = data.rows;
+						ctx_completed = data.rows.length;
+						tbl_completed = data.rows;
 					}
 					pool.query(sql_query.query.all_cars, [req.user.email], (err, data) => {
 						if(err || !data.rows || data.rows.length == 0) {
@@ -386,10 +465,11 @@ function del_journey(req, res, next) {
 							ctx_cars = data.rows.length;
 							cars = data.rows;
 						}
-						basic(req, res, 'journeys', {ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
+						basic(req, res, 'journeys', {ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
 					});
 				});
 			});
+	});
 }
 
 function add_payment(req, res, next) {
@@ -412,7 +492,6 @@ function add_payment(req, res, next) {
 }
 
 function add_driver_info(req, res, next) {
-	console.log("AAAA");
 	var bank_account_no = req.body.bank_account_no;
 	var license_no = req.body.license_no;
 	var email = req.user.email;
@@ -492,6 +571,7 @@ function ride_details(req, res, next) {
 	var pick_up_time = req.query['pick_up_time'];
 	var car_plate_no = req.query['car_plate_no'];
 
+	var ctx, tbl;
 	pool.query(sql_query.query.find_advertised_ride, [email, pick_up_time, car_plate_no], (err, data) => {
 		if (err || !data.rows || data.rows.length == 0) {
 			ctx = 0;
@@ -499,11 +579,19 @@ function ride_details(req, res, next) {
 		} else {
 			ctx = data.rows.length;
 			tbl = data.rows;
-		}
-		if (!req.isAuthenticated()) {
-			res.render('ride_details', {page: 'ride_details', auth: false, tbl: tbl, ctx: ctx});
-		} else {
-			basic(req, res, 'ride_details', {page: 'ride_details', auth: true, tbl:tbl, ctx: ctx, pass_msg: ''});
+			var estimated_price;
+			pool.query(sql_query.query.estimated_price, [tbl[0].pick_up_area, tbl[0].drop_off_area], (err, data) => {
+			  if (err || !data.rows || data.rows.length == 0) {
+			    estimated_price = 0;
+        } else {
+          estimated_price = data.rows[0].avg_price;
+        }
+        if (!req.isAuthenticated()) {
+          res.render('ride_details', {page: 'ride_details', auth: false, tbl: tbl, ctx: ctx});
+        } else {
+          basic(req, res, 'ride_details', {page: 'ride_details', auth: true, tbl:tbl, ctx: ctx, pass_msg: '', estimated_price: estimated_price});
+        }
+      });
 		}
 	});
 }
@@ -533,13 +621,12 @@ function add_bid(req, res, next) {
 	let pick_up_time = req.body.pick_up_time;
 	let pick_up_address = req.body.pick_up_address;
 	let drop_off_address = req.body.drop_off_address;
-	let bid_time = (new Date()).toISOString().slice(0, 19).replace('T', ' ');
 	let bid_price = req.body.bid_price;
 	let passenger_no = req.body.number_of_passengers;
 
 	var tbl, ctx = 0;
 	pool.query(sql_query.query.add_bid, [passenger_email, driver_email, car_plate_no, pick_up_time, pick_up_address,
-		drop_off_address, bid_time, bid_price, passenger_no], (err, data) => {
+		drop_off_address, bid_price, passenger_no], (err, data) => {
 		if (err || !data.rows || data.rows.length == 0) {
 			ctx = 0;
 			tbl = [];
@@ -547,15 +634,38 @@ function add_bid(req, res, next) {
 			ctx = data.rows.length;
 			tbl = data.rows;
 		}
-		if (!req.isAuthenticated()) {
-			res.render('available_rides', {page: 'available_rides', auth: false, tbl: tbl, ctx: ctx});
-		} else {
-			basic(req, res, 'available_rides', {page: 'available_rides', auth: true, tbl:tbl, ctx: ctx});
-		}
+		res.redirect('bids')
 	});
-
 }
 
+function del_bid(req, res, next) {
+	let passenger_email = req.user.email;
+	let bid_details = req.body.bid_details;
+	let driver_email, car_plate_no, pick_up_time;
+	[driver_email, car_plate_no, pick_up_time] = bid_details.split(",");
+
+	var tbl, ctx = 0;
+	pool.query(sql_query.query.del_bid, [passenger_email, driver_email, car_plate_no, pick_up_time], (err, data) => {
+		if (err) {
+			console.log(err);
+		} else {
+			pool.query(sql_query.query.single_passenger_bids, [passenger_email], (err,data) => {
+				if (err || !data.rows || data.rows.length == 0) {
+					ctx = 0;
+					tbl = [];
+				} else {
+					ctx = data.rows.length;
+					tbl = data.rows;
+				}
+				if (!req.isAuthenticated()) {
+					res.render('bids', {page: 'bids', auth: false, tbl: tbl, ctx: ctx});
+				} else {
+					basic(req, res, 'bids', {page: 'bids', auth: true, tbl: tbl, ctx: ctx, bid_msg: 'Bid successfully deleted'});
+				}
+			});
+		}
+	});
+}
 
 // LOGOUT
 function logout(req, res, next) {

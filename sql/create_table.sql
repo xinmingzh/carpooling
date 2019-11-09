@@ -374,7 +374,7 @@ BEGIN
 
     -- );
 
-    -- IF NOT(check_winning_bid = 0 OR check_winning_bid = 1) 
+    -- IF NOT(check_winning_bid = 0 OR check_winning_bid = 1)
 
     RETURN NEW;
 END;

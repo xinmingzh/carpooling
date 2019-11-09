@@ -1,5 +1,5 @@
 <%- include partials/profile.ejs %>
-<h1 class="h2">Bid for Advertised Journey</h1>
+<h1 class="h2">Bid for Ride</h1>
 <div class="btn-toolbar mb-2 mb-md-0">
 </div>
 </div>
@@ -11,7 +11,7 @@
         </div>
         <div class="col-md-8">
             <div class="card-body">
-                <h5 class="card-title">Journey Information</h5>
+                <h5 class="card-title">Ride Information</h5>
                 <div class="form-row">
                     <label for="driver_name" class="col-sm-3 col-form-label"><b>Driver's Name:</b></label>
                     <div class="col-md-2">
@@ -70,6 +70,13 @@
                     <div class="col-sm-2">
                         <input type="text" required="required" readonly class="form-control-plaintext" id="gender"
                                value="<%= ride.pick_up_time %>">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label for="est_price" class="col-sm-3 col-form-label"><b>Estimated Price:</b></label>
+                    <div class="col-sm-2">
+                        <input type="text" required="required" readonly class="form-control-plaintext" id="est_price"
+                               value="<%= estimated_price %>">
                     </div>
                 </div>
             </div>

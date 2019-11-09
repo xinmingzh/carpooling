@@ -1,9 +1,9 @@
 <%- include partials/profile.ejs %>
-<h1 class="h2">Advertised Journeys</h1>
+<h1 class="h2">Available Rides</h1>
 </div>
 <div class="card mb-3">
     <div class="card-header">
-        <i class="fas fa-trophy"></i> &nbsp; Journey List
+        <i class="fas fa-trophy"></i> &nbsp; Rides List
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -38,8 +38,10 @@
                         <td align="center"><%= tbl[i].bid_end_time.toDateString() %>
                             <br> <%= tbl[i].bid_end_time.toLocaleTimeString() %></td>
                         <td align="center">
-                            <a class="btn btn-info btn-sm float-right"
-                               href="../ride-details?email=<%= tbl[i].email %>&pick_up_time=<%= tbl[i].pick_up_time %>&car_plate_no=<%= tbl[i].car_plate_no %>"/>
+                            <a class="btn btn-info"
+                               href="../ride-details?email=<%= tbl[i].email %>&pick_up_time=<%= tbl[i].pick_up_time %>&car_plate_no=<%= tbl[i].car_plate_no %>">
+                                Bid
+                            </a>
                         </td>
                     </tr>
                 <% } %>
