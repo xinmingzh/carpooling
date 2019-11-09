@@ -27,6 +27,8 @@ sql.query = {
 	add_driver:		'INSERT INTO cp_driver (email) VALUES ($1)',
  	add_passenger:	'INSERT INTO cp_passenger (email, home_address, work_address) VALUES ($1, \'\', \'\')',
 	add_bid: 'INSERT INTO cp_passenger_bid (passenger_email, driver_email, car_plate_no, pick_up_time, pick_up_address, drop_off_address, bid_time, bid_price, number_of_passengers, bid_won) VALUES ($1, $2, $3, $4, $5, $6, date_trunc(\'second\', CURRENT_TIMESTAMP), $7, $8, NULL)',
+	rate_passenger: 'INSERT INTO cp_driver_rates(journey_start_time, driver_email, rating) VALUES($1, $2, $3)',
+	rate_driver: '',
 
 	add_cash_payment: 'INSERT INTO cp_payment_method (have_card, email) VALUES (\'f\', $1)',
 
