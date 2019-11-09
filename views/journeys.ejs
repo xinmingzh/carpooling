@@ -134,17 +134,17 @@
 										</tr>
 									</thead>
 									<tfoot>
-										<th>Total: <i><%= ctx_completed %></i></th>
+										<th>Total: <i><%= ctx_upcoming %></i></th>
 										<!-- <th>Win: <i></i></th> -->
 										<!-- <th>Avg: <i></i></th> -->
 									</tfoot>
 									<tbody>
-										<% for(var i=0; i<tbl_completed.length; i++) { %>
+										<% for(var i=0; i<tbl_upcoming.length; i++) { %>
 										<tr>
-											<td align="center"><%= tbl_completed[i].car_plate_no %></td>
-											<td align="center"><%= tbl_completed[i].passenger_email %></td>
+											<td align="center"><%= tbl_upcoming[i].car_plate_no %></td>
+											<td align="center"><%= tbl_upcoming[i].passenger_email %></td>
 											<td align="center">
-												<%= tbl_completed[i].pick_up_time.toDateString() %> <br> <%= tbl_completed[i].pick_up_time.toLocaleTimeString() %>
+												<%= tbl_upcoming[i].pick_up_time.toDateString() %> <br> <%= tbl_upcoming[i].pick_up_time.toLocaleTimeString() %>
 												<form action="/" method="post">
 													<button type="submit" name="journey" class="btn btn-info btn-sm float-right">Picked Up</button>
 												</form>
@@ -166,18 +166,18 @@
 											</tr>
 										</thead>
 										<tfoot>
-											<th>Total: <i><%= ctx_completed %></i></th>
+											<th>Total: <i><%= ctx_ongoing %></i></th>
 											<!-- <th>Win: <i></i></th> -->
 											<!-- <th>Avg: <i></i></th> -->
 										</tfoot>
 										<tbody>
-											<% for(var i=0; i<tbl_completed.length; i++) { %>
+											<% for(var i=0; i<tbl_ongoing.length; i++) { %>
 											<tr>
-												<td align="center"><%= tbl_completed[i].car_plate_no %></td>
-												<td align="center"><%= tbl_completed[i].passenger_email %></td>
-												<td align="center"><%= tbl_completed[i].pick_up_time.toDateString() %> <br> <%= tbl_completed[i].pick_up_time.toLocaleTimeString() %></td>
+												<td align="center"><%= tbl_ongoing[i].car_plate_no %></td>
+												<td align="center"><%= tbl_ongoing[i].passenger_email %></td>
+												<td align="center"><%= tbl_ongoing[i].pick_up_time.toDateString() %> <br> <%= tbl_ongoing[i].pick_up_time.toLocaleTimeString() %></td>
 												<td align="center">
-													<%= tbl_completed[i].journey_start_time.toDateString() %> <br> <%= tbl_completed[i].journey_start_time.toLocaleTimeString() %>
+													<%= tbl_ongoing[i].journey_start_time.toDateString() %> <br> <%= tbl_ongoing[i].journey_start_time.toLocaleTimeString() %>
 													<form action="/" method="post">
 														<button type="submit" name="journey" class="btn btn-info btn-sm float-right">Dropped Off</button>
 													</form>
