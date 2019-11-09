@@ -72,7 +72,15 @@
 							<i class="fas fa-trophy"></i> &nbsp; Journey List
 						</div>
 						<div class="card-body">
-							<div class="table-responsive">
+							<!-- Tab links -->
+						<div class="tab">
+						  <button class="tablinks" onclick="openTab(event, 'advertised')" id="defaultOpen">Advertised</button>
+						  <button class="tablinks" onclick="openTab(event, 'upcoming')">Upcoming</button>
+							<button class="tablinks" onclick="openTab(event, 'ongoing')">In Progress</button>
+						  <button class="tablinks" onclick="openTab(event, 'complete')">Complete</button>
+						</div>
+
+							<div class="table-responsive tabcontent" id="advertised">
 								<table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
 									<thead>
 										<tr>
@@ -115,6 +123,114 @@
 									</tbody>
 								</table>
 							</div>
+
+							<div class="table-responsive tabcontent" id="upcoming">
+								<table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+									<thead>
+										<tr>
+											<th>Car</th>
+											<th>Passenger</th>
+											<th>Pickup Time</th>
+										</tr>
+									</thead>
+									<tfoot>
+										<th>Total: <i><%= ctx_completed %></i></th>
+										<!-- <th>Win: <i></i></th> -->
+										<!-- <th>Avg: <i></i></th> -->
+									</tfoot>
+									<tbody>
+										<% for(var i=0; i<tbl_completed.length; i++) { %>
+										<tr>
+											<td align="center"><%= tbl_completed[i].car_plate_no %></td>
+											<td align="center"><%= tbl_completed[i].passenger_email %></td>
+											<td align="center">
+												<%= tbl_completed[i].pick_up_time.toDateString() %> <br> <%= tbl_completed[i].pick_up_time.toLocaleTimeString() %>
+												<form action="/" method="post">
+													<button type="submit" name="journey" class="btn btn-info btn-sm float-right">Picked Up</button>
+												</form>
+											</td>
+										</tr>
+										<% } %>
+									</tbody>
+								</table>
+							</div>
+
+								<div class="table-responsive tabcontent" id="ongoing">
+									<table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+										<thead>
+											<tr>
+												<th>Car</th>
+												<th>Passenger</th>
+												<th>Pickup Time</th>
+												<th>Journey Start</th>
+											</tr>
+										</thead>
+										<tfoot>
+											<th>Total: <i><%= ctx_completed %></i></th>
+											<!-- <th>Win: <i></i></th> -->
+											<!-- <th>Avg: <i></i></th> -->
+										</tfoot>
+										<tbody>
+											<% for(var i=0; i<tbl_completed.length; i++) { %>
+											<tr>
+												<td align="center"><%= tbl_completed[i].car_plate_no %></td>
+												<td align="center"><%= tbl_completed[i].passenger_email %></td>
+												<td align="center"><%= tbl_completed[i].pick_up_time.toDateString() %> <br> <%= tbl_completed[i].pick_up_time.toLocaleTimeString() %></td>
+												<td align="center">
+													<%= tbl_completed[i].journey_start_time.toDateString() %> <br> <%= tbl_completed[i].journey_start_time.toLocaleTimeString() %>
+													<form action="/" method="post">
+														<button type="submit" name="journey" class="btn btn-info btn-sm float-right">Dropped Off</button>
+													</form>
+												</td>
+												<td>
+													</td>
+											</tr>
+											<% } %>
+										</tbody>
+									</table>
+								</div>
+
+								<div class="table-responsive tabcontent" id="complete">
+									<table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+										<thead>
+											<tr>
+												<th>Car</th>
+												<th>Passenger</th>
+												<th>Pickup Time</th>
+												<th>Journey Start Time</th>
+												<th>Journey End Time</th>
+												<th>Journey Distance</th>
+												<th>Rate</th>
+											</tr>
+										</thead>
+										<tfoot>
+											<th>Total: <i><%= ctx_completed %></i></th>
+											<!-- <th>Win: <i></i></th> -->
+											<!-- <th>Avg: <i></i></th> -->
+										</tfoot>
+										<tbody>
+											<% for(var i=0; i<tbl_completed.length; i++) { %>
+											<tr>
+												<td align="center"><%= tbl_completed[i].car_plate_no %></td>
+												<td align="center"><%= tbl_completed[i].passenger_email %></td>
+													<td align="center"><%= tbl_completed[i].pick_up_time.toDateString() %> <br> <%= tbl_completed[i].pick_up_time.toLocaleTimeString() %></td>
+														<td align="center"><%= tbl_completed[i].journey_start_time.toDateString() %> <br> <%= tbl_completed[i].journey_start_time.toLocaleTimeString() %></td>
+															<td align="center"><%= tbl_completed[i].journey_end_time.toDateString() %> <br> <%= tbl_completed[i].journey_end_time.toLocaleTimeString() %></td>
+												<td align="center">
+													<%= tbl_completed[i].journey_distance %>
+													<form action="/" method="post">
+														<button type="submit" name="journey" class="btn btn-info btn-sm float-right">Picked Up</button>
+													</form>
+												</td>
+												<td>
+
+													</td>
+											</tr>
+											<% } %>
+										</tbody>
+									</table>
+								</div>
+
 						</div>
 						<div class="card-footer small text-muted"><span class="badge badge-pill badge-info"><%= journey_msg %></span></div>
 					</div>
@@ -122,7 +238,6 @@
   </main>
 </div>
 </div>
-
 		<%- include bottomscript.ejs %>
   </body>
 </html>

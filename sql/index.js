@@ -14,6 +14,8 @@ sql.query = {
 	all_cars:  'SELECT * FROM cp_driver_drives WHERE email=$1',
 	all_journeys: 'SELECT car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, pick_up_time FROM cp_advertised_journey WHERE email=$1',
 	valid_journeys: 'SELECT car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, pick_up_time FROM cp_advertised_journey WHERE bid_end_time > NOW()::timestamp',
+	complete_journeys_driver: 'SELECT passenger_email, car_plate_no, pick_up_time, journey_start_time, journey_end_time, journey_distance FROM cp_journey_occurs WHERE driver_email=$1',
+	complete_journeys_passenger: 'SELECT driver_email, car_plate_no, pick_up_time, journey_start_time, journey_end_time, journey_distance FROM cp_journey_occurs WHERE passenger_email=$1 AND journey_end_time IS NOT NULL',
 
 	// Insertion
 	add_car: 'INSERT INTO cp_driver_drives (car_plate_no, car_model, max_passengers, email) VALUES($1, $2, $3, $4)',
@@ -22,7 +24,7 @@ sql.query = {
 	add_driver:		'INSERT INTO cp_driver (email) VALUES ($1)',
  	add_passenger:	'INSERT INTO cp_passenger (email, home_address, work_address) VALUES ($1, \'\', \'\')',
 	add_bid: '',
-	
+
 	add_cash_payment: 'INSERT INTO cp_payment_method (have_card, email) VALUES (\'f\', $1)',
 	add_payment: 'UPDATE cp_payment_method SET have_card=$1, cardholder_name=$2, cvv=$3, expiry_date=$4, card_number=$5, email=$6',
 	add_driver_info: 'UPDATE cp_driver SET bank_account_no=$1, license_no=$2 WHERE email=$3',
