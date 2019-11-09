@@ -13,7 +13,7 @@ sql.query = {
 	all_games: 'SELECT ranking,game_list.gamename AS game,rating FROM user_games INNER JOIN game_list ON user_games.gamename=game_list.gamename WHERE username=$1 ORDER BY ranking ASC',
 	all_cars:  'SELECT * FROM cp_driver_drives WHERE email=$1',
 	all_journeys: 'SELECT car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, pick_up_time FROM cp_advertised_journey WHERE email=$1',
-  valid_journeys: 'SELECT * FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_driver WHERE bid_end_time > NOW()::timestamp AND email=$1',
+  	valid_journeys: 'SELECT * FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_driver WHERE bid_end_time > NOW()::timestamp AND email=$1',
 	all_available_journeys: 'SELECT email, car_model, car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, to_char(pick_up_time, \'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_user WHERE bid_end_time > NOW()::timestamp',
 
 	// Insertion
