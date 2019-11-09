@@ -15,7 +15,7 @@ sql.query = {
 	all_journeys: 'SELECT car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, pick_up_time FROM cp_advertised_journey WHERE email=$1',
   valid_journeys: 'SELECT * FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_driver WHERE bid_end_time > NOW()::timestamp AND email=$1',
 	all_available_journeys: 'SELECT email, car_model, car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, to_char(pick_up_time, \'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_user WHERE bid_end_time > NOW()::timestamp',
-
+	single_passenger_bids: 'SELECT driver_email, firstname, lastname, car_plate_no, to_char(pick_up_time,\'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time, pick_up_address, drop_off_address, to_char(bid_time,\'YYYY-MM-DD HH24:MI:SS\') AS bid_time, bid_price, number_of_passengers FROM cp_passenger_bid NATURAL JOIN cp_advertised_journey NATURAL JOIN cp_driver NATURAL JOIN cp_user WHERE passenger_email=$1',
 	// Insertion
 	add_car: 'INSERT INTO cp_driver_drives (car_plate_no, car_model, max_passengers, email) VALUES($1, $2, $3, $4)',
 	advertise_journey: 'INSERT INTO cp_advertised_journey (email, car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, pick_up_time) VALUES ($1, $2, $8, $3, $4, $9, $5, $6, $7)',
@@ -44,6 +44,7 @@ sql.query = {
 	// Deletion
 	del_car: 'DELETE FROM cp_driver_drives WHERE email=$1 AND car_plate_no=$2',
 	del_journey: 'DELETE FROM cp_advertised_journey WHERE email=$1 AND car_plate_no=$2 AND pick_up_time=$3',
+	del_bid: 'DELETE FROM cp_passenger_bid WHERE passenger_email=$1 AND driver_email=$2 AND car_plate_no=$3 AND to_char(pick_up_time, \'YYYY-MM-DD HH24:MI:SS\')=$4',
 
 	// Search
 	search_game: 'SELECT * FROM game_list WHERE lower(gamename) LIKE $1',

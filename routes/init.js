@@ -52,9 +52,10 @@ function initRouter(app) {
 	app.post('/update_pass', passport.authMiddleware(), update_pass);
 	app.post('/add_car'    , passport.authMiddleware(), add_car);
 	app.post('/add_journey', passport.authMiddleware(), add_journey);
+	app.post('/add_bid'		 , passport.authMiddleware(), add_bid);
 	app.post('/del_car'    , passport.authMiddleware(), del_car);
 	app.post('/del_journey', passport.authMiddleware(), del_journey);
-	app.post('/add_bid', passport.authMiddleware(), add_bid);
+	app.post('/del_bid'		 , passport.authMiddleware(), del_bid);
 
 	app.post('/reg_user'   , passport.antiMiddleware(), reg_user);
 
@@ -140,7 +141,22 @@ function payment(req, res, next) {
 }
 
 function bids(req, res, next) {
-	basic(req, res, 'bids', { info_msg: msg(req, 'info', 'Information updated successfully', 'Error in updating information'), pass_msg: msg(req, 'pass', 'Password updated successfully', 'Error in updating password'), auth: true });
+	let email = req.user.email;
+	var tbl, ctx = 0;
+	pool.query(sql_query.query.single_passenger_bids, [email], (err,data) => {
+		if (err || !data.rows || data.rows.length == 0) {
+			ctx = 0;
+			tbl = [];
+		} else {
+			ctx = data.rows.length;
+			tbl = data.rows;
+		}
+		if (!req.isAuthenticated()) {
+			res.render('bids', {page: 'bids', auth: false, tbl: tbl, ctx: ctx});
+		} else {
+			basic(req, res, 'bids', {page: 'bids', auth: true, tbl: tbl, ctx: ctx, bid_msg: ''});
+		}
+	});
 }
 
 function ridelist(req, res, next) {
@@ -545,15 +561,38 @@ function add_bid(req, res, next) {
 			ctx = data.rows.length;
 			tbl = data.rows;
 		}
-		if (!req.isAuthenticated()) {
-			res.render('available_rides', {page: 'available_rides', auth: false, tbl: tbl, ctx: ctx});
-		} else {
-			basic(req, res, 'available_rides', {page: 'available_rides', auth: true, tbl:tbl, ctx: ctx});
-		}
+		res.redirect('bids')
 	});
-
 }
 
+function del_bid(req, res, next) {
+	let passenger_email = req.user.email;
+	let bid_details = req.body.bid_details;
+	let driver_email, car_plate_no, pick_up_time;
+	[driver_email, car_plate_no, pick_up_time] = bid_details.split(",");
+
+	var tbl, ctx = 0;
+	pool.query(sql_query.query.del_bid, [passenger_email, driver_email, car_plate_no, pick_up_time], (err, data) => {
+		if (err) {
+			console.log(err);
+		} else {
+			pool.query(sql_query.query.single_passenger_bids, [passenger_email], (err,data) => {
+				if (err || !data.rows || data.rows.length == 0) {
+					ctx = 0;
+					tbl = [];
+				} else {
+					ctx = data.rows.length;
+					tbl = data.rows;
+				}
+				if (!req.isAuthenticated()) {
+					res.render('bids', {page: 'bids', auth: false, tbl: tbl, ctx: ctx});
+				} else {
+					basic(req, res, 'bids', {page: 'bids', auth: true, tbl: tbl, ctx: ctx, bid_msg: 'Bid successfully deleted'});
+				}
+			});
+		}
+	});
+}
 
 // LOGOUT
 function logout(req, res, next) {
