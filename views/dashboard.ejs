@@ -72,8 +72,36 @@
   							<div class="card-footer small text-muted"><button type="submit" class="btn btn-secondary">Update Password</button> &nbsp;&nbsp;&nbsp; <span class="badge badge-pill badge-info"><%= pass_msg %></span></div>
   						</form>
   					</div>
+<div class="card mb-3">
+	<div class="card-header">
+		<i class="fas fa-info"></i> &nbsp; Your Fans
+	</div>
+	<div class="card-body">
+		<div class="table-responsive">
+			<table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+				<thead>
+				<tr>
+					<th>No.</th>
+					<th>Email of Passenger</th>
+				</tr>
+				</thead>
+				<tfoot>
+				<th>Total: <i><%= ctx %></i></th>
+				</tfoot>
+				<tbody>
+				<% for(var i = 0; i < tbl.length; i++) { %>
+					<tr>
+						<td align="center"><%= i + 1 %></td>
+						<td align="center"><%= tbl[i].email %></td>
+						</td>
+					</tr>
+				<% } %>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
             <%- include partials/footer.ejs %>
-
           </main>
         </div>
       </div>

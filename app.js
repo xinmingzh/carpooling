@@ -68,7 +68,7 @@ const pool = new Pool({
 });
 
 console.log('Initializing Tables!')
-// var drop_tables = fs.readFileSync('sql/drop_table.sql').toString();
+var drop_tables = fs.readFileSync('sql/drop_table.sql').toString();
 // pool.query(drop_tables, function(err, result){
 //     if(err){
 //         console.log('error: ', err);

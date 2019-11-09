@@ -40,6 +40,7 @@ function initRouter(app) {
 	app.get('/bids'    	, passport.authMiddleware(), bids);
 	app.get('/driverinfo', passport.authMiddleware(), driverinfo);
 	app.get('/')
+  app.get('/passenger-journeys', passport.authMiddleware(), passenger_rides);
 
 	//app.get('/rides', passport.authMiddleware(), rides);
 
@@ -202,7 +203,20 @@ function search(req, res, next) {
 
 
 function dashboard(req, res, next) {
-	basic(req, res, 'dashboard', { info_msg: msg(req, 'info', 'Information updated successfully', 'Error in updating information'), pass_msg: msg(req, 'pass', 'Password updated successfully', 'Error in updating password'), auth: true });
+	var ctx, tbl;
+	pool.query(sql_query.query.get_fan, [req.user.email], (err, data) => {
+		if (err) {
+			ctx = 0;
+			tbl = [];
+			console.log(err);
+		} else {
+			ctx = data.rows.length;
+			tbl = data.rows;
+		}
+		basic(req, res, 'dashboard', { ctx: ctx, tbl: tbl, info_msg: msg(req, 'info', 'Information updated successfully', 'Error in updating information'), pass_msg: msg(req, 'pass', 'Password updated successfully', 'Error in updating password'), auth: true });
+	});
+	//basic(req, res, 'dashboard', {ctx: 0, tbl: [], info_msg: msg(req, 'info', 'Information updated successfully', 'Error in updating information'), pass_msg: msg(req, 'pass', 'Password updated successfully', 'Error in updating password'), auth: true });
+
 }
 
 //view cars
@@ -264,7 +278,7 @@ function del_car(req, res, next) {
 }
 
 function journeys(req, res, next) {
-	var win = 0, avg = 0, ctx = 0, tbl, ctx_cars = 0, cars, ctx_completed = 0, tbl_completed;
+	var win = 0, avg = 0, ctx = 0, tbl, ctx_cars = 0, cars, ctx_completed = 0, tbl_completed = [], ctx_ongoing = 0, tbl_ongoing = [], ctx_upcoming = 0, tbl_upcoming = [];
 	pool.query(sql_query.query.count_wins, [req.user.username], (err, data) => {
 		if(err || !data.rows || data.rows.length == 0) {
 			win = 0;
@@ -282,13 +296,29 @@ function journeys(req, res, next) {
 				tbl = data.rows;
 			}
 			pool.query(sql_query.query.complete_journeys_driver, [req.user.email], (err, data) => {
-				if(err || !data.rows || data.rows.length == 0) {
+				let journeys_occuring;
+				if (err || !data.rows || data.rows.length == 0) {
 					ctx_completed = 0;
 					avg = 0;
 					tbl_completed = [];
+					ctx_upcoming = 0;
+					tbl_upcoming = [];
+					ctx_ongoing = 0;
+					tbl_ongoing = [];
 				} else {
-					ctx_completed = data.rows.length;
-					tbl_completed = data.rows;
+					journeys_occuring = data.rows;
+					for (var i = 0; i < journeys_occuring.length; i++) {
+						if (journeys_occuring[i].journey_start_time === null && journeys_occuring[i].journey_end_time === null) {
+							ctx_upcoming += 1
+							tbl_upcoming.push(journeys_occuring[i])
+						} else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time === null) {
+							ctx_ongoing += 1
+							tbl_ongoing.push(journeys_occuring[i])
+						} else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time != null) {
+							ctx_completed += 1
+							tbl_completed.push(journeys_occuring[i])
+						}
+					}
 				}
 				pool.query(sql_query.query.all_cars, [req.user.email], (err, data) => {
 					if(err || !data.rows || data.rows.length == 0) {
@@ -298,10 +328,41 @@ function journeys(req, res, next) {
 						ctx_cars = data.rows.length;
 						cars = data.rows;
 					}
-					basic(req, res, 'journeys', { win: win, ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
+					basic(req, res, 'journeys', { win: win, ctx_ongoing: ctx_ongoing, ctx_upcoming:ctx_upcoming, tbl_ongoing:tbl_ongoing, tbl_upcoming:tbl_upcoming, ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
 				});
 			});
 		});
+	});
+}
+
+function passenger_rides(req, res, next) {
+	var ctx = 0, tbl, ctx_cars = 0, cars, ctx_completed = 0, tbl_completed = [], ctx_ongoing = 0, tbl_ongoing = [], ctx_upcoming = 0, tbl_upcoming = [];
+	pool.query(sql_query.query.journeys_passenger, [req.user.email], (err, data) => {
+		if(err || !data.rows || data.rows.length == 0) {
+			ctx_completed = 0;
+			tbl_completed = [];
+			ctx_upcoming = 0;
+			tbl_upcoming = [];
+			ctx_ongoing = 0;
+			tbl_ongoing = [];
+		} else {
+			var journeys_occuring = data.rows;
+			for (var i = 0; i < journeys_occuring.length; i++) {
+				if (journeys_occuring[i].journey_start_time === null && journeys_occuring[i].journey_end_time === null) {
+					ctx_upcoming += 1
+					tbl_upcoming.push(journeys_occuring[i])
+				}
+				else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time === null) {
+					ctx_ongoing += 1
+					tbl_ongoing.push(journeys_occuring[i])
+				}
+				else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time != null) {
+					ctx_completed += 1
+					tbl_completed.push(journeys_occuring[i])
+				}
+			}
+		}
+		basic(req, res, 'passenger_journeys', { ctx_ongoing: ctx_ongoing, ctx_upcoming:ctx_upcoming, tbl_ongoing:tbl_ongoing, tbl_upcoming:tbl_upcoming, ctx: ctx, tbl: tbl, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
 	});
 }
 
@@ -315,7 +376,7 @@ function retrieve(req, res, next) {
 
 // POST
 function rate_passenger(req, res, next) {
-	var win = 0, avg = 0, ctx = 0, tbl, ctx_cars = 0, cars, ctx_completed = 0, tbl_completed;
+	var win = 0, avg = 0, ctx = 0, tbl, ctx_cars = 0, cars, ctx_completed = 0, tbl_completed = [], ctx_ongoing = 0, tbl_ongoing = [], ctx_upcoming = 0, tbl_upcoming = [];
 	let rating = parseInt(req.body.optradio)
 	let journeyStart = moment(new Date(req.body.info)).format('YYYY-MM-DD HH:mm:ss')
 	pool.query(sql_query.query.rate_passenger, [journeyStart, req.user.email, rating], (err, data) => {
@@ -337,9 +398,26 @@ function rate_passenger(req, res, next) {
 							ctx_completed = 0;
 							avg = 0;
 							tbl_completed = [];
+							ctx_upcoming = 0;
+							tbl_upcoming = [];
+							ctx_ongoing = 0;
+							tbl_ongoing = [];
 						} else {
-							ctx_completed = data.rows.length;
-							tbl_completed = data.rows;
+							journeys_occuring = data.rows;
+							for (var i = 0; i < journeys_occuring.length; i++) {
+								if (journeys_occuring[i].journey_start_time === null && journeys_occuring[i].journey_end_time === null) {
+									ctx_upcoming += 1
+									tbl_upcoming.push(journeys_occuring[i])
+								}
+								else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time === null) {
+									ctx_ongoing += 1
+									tbl_ongoing.push(journeys_occuring[i])
+								}
+								else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time != null) {
+									ctx_completed += 1
+									tbl_completed.push(journeys_occuring[i])
+								}
+							}
 						}
 						pool.query(sql_query.query.all_cars, [req.user.email], (err, data) => {
 							if(err || !data.rows || data.rows.length == 0) {
@@ -349,12 +427,12 @@ function rate_passenger(req, res, next) {
 								ctx_cars = data.rows.length;
 								cars = data.rows;
 							}
-							basic(req, res, 'journeys', { win: win, ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, rating: rating, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Rating added successfully', 'Invalid parameter in rating or rating has already been made.'), auth: true });
+							basic(req, res, 'journeys', { win: win, ctx_ongoing: ctx_ongoing, ctx_upcoming:ctx_upcoming, tbl_ongoing:tbl_ongoing, tbl_upcoming:tbl_upcoming, ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
 						});
 					});
 				});
 			}
-			});
+		});
 }
 
 
@@ -428,7 +506,7 @@ function del_journey(req, res, next) {
 	let carplate = req.body.journey.split(",")[0].trim()
 	let pickuptime = moment(new Date(req.body.journey.split(",")[1].trim())).format('YYYY-MM-DD HH:mm:ss')
 
-	var ctx = 0, avg = 0, tbl = [], ctx_cars = 0, cars=[], ctx_completed=0;
+	var win = 0, avg = 0, ctx = 0, tbl, ctx_cars = 0, cars, ctx_completed = 0, tbl_completed = [], ctx_ongoing = 0, tbl_ongoing = [], ctx_upcoming = 0, tbl_upcoming = [];
 	// pool.query(sql_query.query.avg_rating, [req.user.username], (err, data) => {
 	// 	if(err || !data.rows || data.rows.length == 0) {
 	// 		avg = 0;
@@ -439,33 +517,58 @@ function del_journey(req, res, next) {
 			if(err) {
 				console.log(err)
 			} else {}
-			pool.query(sql_query.query.all_journeys, [req.user.email], (err, data) => {
+			pool.query(sql_query.query.count_wins, [req.user.username], (err, data) => {
 				if(err || !data.rows || data.rows.length == 0) {
-					ctx = 0;
-					avg = 0;
-					tbl = [];
+					win = 0;
 				} else {
-					ctx = data.rows.length;
-					tbl = data.rows;
+					win = data.rows[0].count;
 				}
-				pool.query(sql_query.query.complete_journeys_driver, [req.user.email], (err, data) => {
+				pool.query(sql_query.query.all_journeys, [req.user.email], (err, data) => {
 					if(err || !data.rows || data.rows.length == 0) {
-						ctx_completed = 0;
+						ctx = 0;
 						avg = 0;
-						tbl_completed = [];
+						tbl = [];
 					} else {
-						ctx_completed = data.rows.length;
-						tbl_completed = data.rows;
+						ctx = data.rows.length;
+						avg = win == 0 ? 0 : win/ctx;
+						tbl = data.rows;
 					}
-					pool.query(sql_query.query.all_cars, [req.user.email], (err, data) => {
+					pool.query(sql_query.query.complete_journeys_driver, [req.user.email], (err, data) => {
 						if(err || !data.rows || data.rows.length == 0) {
-							ctx_cars = 0;
-							cars = [];
+							ctx_completed = 0;
+							avg = 0;
+							tbl_completed = [];
+							ctx_upcoming = 0;
+							tbl_upcoming = [];
+							ctx_ongoing = 0;
+							tbl_ongoing = [];
 						} else {
-							ctx_cars = data.rows.length;
-							cars = data.rows;
+							journeys_occuring = data.rows;
+							for (var i = 0; i < journeys_occuring.length; i++) {
+								if (journeys_occuring[i].journey_start_time === null && journeys_occuring[i].journey_end_time === null) {
+									ctx_upcoming += 1
+									tbl_upcoming.push(journeys_occuring[i])
+								}
+								else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time === null) {
+									ctx_ongoing += 1
+									tbl_ongoing.push(journeys_occuring[i])
+								}
+								else if (journeys_occuring[i].journey_start_time != null && journeys_occuring[i].journey_end_time != null) {
+									ctx_completed += 1
+									tbl_completed.push(journeys_occuring[i])
+								}
+							}
 						}
-						basic(req, res, 'journeys', {ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
+						pool.query(sql_query.query.all_cars, [req.user.email], (err, data) => {
+							if(err || !data.rows || data.rows.length == 0) {
+								ctx_cars = 0;
+								cars = [];
+							} else {
+								ctx_cars = data.rows.length;
+								cars = data.rows;
+							}
+							basic(req, res, 'journeys', { win: win, ctx_ongoing: ctx_ongoing, ctx_upcoming:ctx_upcoming, tbl_ongoing:tbl_ongoing, tbl_upcoming:tbl_upcoming, ctx: ctx, avg: avg, tbl: tbl, ctx_cars: ctx_cars, cars: cars, ctx_completed: ctx_completed, tbl_completed: tbl_completed, journey_msg: msg(req, 'add', 'Journey added successfully', 'Invalid parameter in journey'), auth: true });
+						});
 					});
 				});
 			});

@@ -17,8 +17,8 @@ sql.query = {
 	all_available_journeys: 'SELECT email, car_model, car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, to_char(pick_up_time, \'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time FROM cp_advertised_journey NATURAL JOIN cp_driver_drives NATURAL JOIN cp_user WHERE bid_end_time > NOW()::timestamp',
 	single_passenger_bids: 'SELECT driver_email, firstname, lastname, car_plate_no, to_char(pick_up_time,\'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time, pick_up_address, drop_off_address, to_char(bid_time,\'YYYY-MM-DD HH24:MI:SS\') AS bid_time, bid_price, number_of_passengers FROM cp_passenger_bid NATURAL JOIN cp_advertised_journey NATURAL JOIN cp_driver NATURAL JOIN cp_user WHERE passenger_email=$1',
   complete_journeys_driver: 'SELECT passenger_email, car_plate_no, pick_up_time, journey_start_time, journey_end_time, journey_distance FROM cp_journey_occurs WHERE driver_email=$1',
-	complete_journeys_passenger: 'SELECT driver_email, car_plate_no, pick_up_time, journey_start_time, journey_end_time, journey_distance FROM cp_journey_occurs WHERE passenger_email=$1 AND journey_end_time IS NOT NULL',
 	estimated_price: 'SELECT AVG(bid_price) AS avg_price FROM cp_passenger_bid NATURAL JOIN cp_advertised_journey WHERE bid_won = TRUE AND pick_up_area=$1 AND drop_off_area=$2 GROUP BY pick_up_area, drop_off_area',
+	journeys_passenger: 'SELECT driver_email, car_plate_no, pick_up_time, journey_start_time, journey_end_time, journey_distance FROM cp_journey_occurs WHERE passenger_email=$1',
 
 	// Insertion
 	add_car: 'INSERT INTO cp_driver_drives (car_plate_no, car_model, max_passengers, email) VALUES($1, $2, $3, $4)',
@@ -55,7 +55,7 @@ sql.query = {
 	// Search
 	search_game: 'SELECT * FROM game_list WHERE lower(gamename) LIKE $1',
 
-
+	get_fan: 'WITH x AS (SELECT p.driver_email, p.passenger_email, COUNT(*) FROM cp_passenger_bid p GROUP BY p.driver_email, p.passenger_email), y as (Select z.passenger_email, j.driver_email FROM (SELECT passenger_email, journey_start_time FROM cp_passenger_rates WHERE rating >= 4) as z JOIN cp_journey_occurs j ON z.passenger_email = j.passenger_email AND z.journey_start_time = j.journey_start_time) SELECT DISTINCT x.driver_email, x.passenger_email FROM x JOIN y ON x.driver_email = y.driver_email AND x.passenger_email = y.passenger_email WHERE x.count >= 3 AND x.driver_email = $1',
 	//complex queries
 	choose_best_bid: '',
 
