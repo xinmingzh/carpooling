@@ -523,12 +523,19 @@ function ride_details(req, res, next) {
 		} else {
 			ctx = data.rows.length;
 			tbl = data.rows;
-			pool.query(sql_query.query.estimated_price, )
-		}
-		if (!req.isAuthenticated()) {
-			res.render('ride_details', {page: 'ride_details', auth: false, tbl: tbl, ctx: ctx});
-		} else {
-			basic(req, res, 'ride_details', {page: 'ride_details', auth: true, tbl:tbl, ctx: ctx, pass_msg: ''});
+			var estimated_price;
+			pool.query(sql_query.query.estimated_price, [tbl[0].pick_up_area, tbl[0].drop_off_area], (err, data) => {
+			  if (err || !data.rows || data.rows.length == 0) {
+			    estimated_price = 0;
+        } else {
+          estimated_price = data.rows[0].avg_price;
+        }
+        if (!req.isAuthenticated()) {
+          res.render('ride_details', {page: 'ride_details', auth: false, tbl: tbl, ctx: ctx});
+        } else {
+          basic(req, res, 'ride_details', {page: 'ride_details', auth: true, tbl:tbl, ctx: ctx, pass_msg: '', estimated_price: estimated_price});
+        }
+      });
 		}
 	});
 }

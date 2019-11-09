@@ -18,6 +18,8 @@ sql.query = {
 	single_passenger_bids: 'SELECT driver_email, firstname, lastname, car_plate_no, to_char(pick_up_time,\'YYYY-MM-DD HH24:MI:SS\') AS pick_up_time, pick_up_address, drop_off_address, to_char(bid_time,\'YYYY-MM-DD HH24:MI:SS\') AS bid_time, bid_price, number_of_passengers FROM cp_passenger_bid NATURAL JOIN cp_advertised_journey NATURAL JOIN cp_driver NATURAL JOIN cp_user WHERE passenger_email=$1',
   complete_journeys_driver: 'SELECT passenger_email, car_plate_no, pick_up_time, journey_start_time, journey_end_time, journey_distance FROM cp_journey_occurs WHERE driver_email=$1',
 	complete_journeys_passenger: 'SELECT driver_email, car_plate_no, pick_up_time, journey_start_time, journey_end_time, journey_distance FROM cp_journey_occurs WHERE passenger_email=$1 AND journey_end_time IS NOT NULL',
+	estimated_price: 'SELECT AVG(bid_price) AS avg_price FROM cp_passenger_bid NATURAL JOIN cp_advertised_journey WHERE bid_won = TRUE AND pick_up_area=$1 AND drop_off_area=$2 GROUP BY pick_up_area, drop_off_area',
+
 	// Insertion
 	add_car: 'INSERT INTO cp_driver_drives (car_plate_no, car_model, max_passengers, email) VALUES($1, $2, $3, $4)',
 	advertise_journey: 'INSERT INTO cp_advertised_journey (email, car_plate_no, max_passengers, pick_up_area, drop_off_area, min_bid, bid_start_time, bid_end_time, pick_up_time) VALUES ($1, $2, $8, $3, $4, $9, $5, $6, $7)',
