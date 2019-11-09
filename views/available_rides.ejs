@@ -39,7 +39,9 @@
                             <br> <%= tbl[i].bid_end_time.toLocaleTimeString() %></td>
                         <td align="center">
                             <a class="btn btn-info btn-sm float-right"
-                               href="../ride-details?email=<%= tbl[i].email %>&pick_up_time=<%= tbl[i].pick_up_time %>&car_plate_no=<%= tbl[i].car_plate_no %>"/>
+                               href="../ride-details?email=<%= tbl[i].email %>&pick_up_time=<%= tbl[i].pick_up_time %>&car_plate_no=<%= tbl[i].car_plate_no %>">
+                                Bid
+                            </a>
                         </td>
                     </tr>
                 <% } %>
